@@ -17,12 +17,6 @@ abstract contract OpacitySDK {
     // The address of the BLS signature checker contract
     address public constant BLS_SIG_CHECKER = address(0x2C41688c9D1B4F5bb4062BF1Ad6E8C416d2fE751); //TODO remove hardcoded address
 
-    // Namespace for the contract
-    bytes public namespace;
-
-    // The AVS service manager address
-    address public avsAddress;
-
     // Constants for stake threshold checking
     uint8 public constant THRESHOLD_DENOMINATOR = 100;
     uint8 public QUORUM_THRESHOLD = 66; // 66% threshold for quorum verification
@@ -34,10 +28,8 @@ abstract contract OpacitySDK {
     error StaleBlockNumber();
     error FutureBlockNumber();
 
-    constructor(address _avsAddress) {
+    constructor() {
         blsSignatureChecker = BLSSignatureChecker(BLS_SIG_CHECKER);
-        avsAddress = _avsAddress;
-        namespace = abi.encodePacked(avsAddress, "opacity");
     }
 
     /**
@@ -113,13 +105,5 @@ abstract contract OpacitySDK {
      */
     function getBlockStaleMeasure() external view returns (uint32) {
         return BLOCK_STALE_MEASURE;
-    }
-
-    /**
-     * @notice Get the namespace for this contract
-     * @return The namespace bytes
-     */
-    function getNamespace() external view returns (bytes memory) {
-        return namespace;
     }
 } 
