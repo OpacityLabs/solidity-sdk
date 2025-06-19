@@ -15,7 +15,7 @@ abstract contract OpacitySDK {
     // The BLS signature checker contract
     BLSSignatureChecker public immutable blsSignatureChecker;
     // The address of the BLS signature checker contract
-    address public constant BLS_SIG_CHECKER = address(0xB6861c61782aec28a14cF68cECf216Ad7f5F4e2D);
+    address public constant BLS_SIG_CHECKER = address(0x2C41688c9D1B4F5bb4062BF1Ad6E8C416d2fE751); //TODO remove hardcoded address
 
     // Namespace for the contract
     bytes public namespace;
