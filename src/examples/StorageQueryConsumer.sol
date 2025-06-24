@@ -41,17 +41,17 @@ contract OpacityVerificationExample is OpacitySDK {
         try this.verify(params) returns (bool verified) {
             // Verification successful - store the verified value
             bytes32 verificationHash = keccak256(
-                abi.encodePacked(params.targetAddress, params.platform, params.resource, params.value, block.timestamp)
+                abi.encodePacked(params.userAddress, params.platform, params.resource, params.value, block.timestamp)
             );
 
-            userVerifications[params.targetAddress] = VerificationResult({
+            userVerifications[params.userAddress] = VerificationResult({
                 isVerified: verified,
                 verifiedValue: params.value,
                 timestamp: block.timestamp,
                 verificationHash: verificationHash
             });
 
-            emit DataVerified(params.targetAddress, params.value, verificationHash, verified); // derefrence by using the struct params
+            emit DataVerified(params.userAddress, params.value, verificationHash, verified); // derefrence by using the struct params
             return (verified, params.value);
         } catch {
             return (false, "");

@@ -69,7 +69,7 @@ OpacitySDK.VerificationParams memory params = OpacitySDK.VerificationParams({
     quorumNumbers: quorumNumbers,
     referenceBlockNumber: referenceBlockNumber,
     nonSignerStakesAndSignature: nonSignerStakesAndSignature,
-    targetAddress: userAddress,
+    userAddress: userAddress,
     platform: "twitter",
     resource: "followers",
     value: "10000",
