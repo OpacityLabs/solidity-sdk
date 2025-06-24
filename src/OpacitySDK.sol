@@ -41,8 +41,6 @@ abstract contract OpacitySDK {
 
     // The BLS signature checker contract
     BLSSignatureChecker public immutable blsSignatureChecker;
-    // The address of the BLS signature checker contract
-    address public constant BLS_SIG_CHECKER = address(0x259eD6dA3455De487e2a143594A4BE6f4b915716); //TODO remove hardcoded address
 
     // Constants for stake threshold checking
     uint8 public constant THRESHOLD_DENOMINATOR = 100;
@@ -55,8 +53,13 @@ abstract contract OpacitySDK {
     error StaleBlockNumber();
     error FutureBlockNumber();
 
-    constructor() {
-        blsSignatureChecker = BLSSignatureChecker(BLS_SIG_CHECKER);
+    /**
+     * @notice Constructor for OpacitySDK
+     * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
+     */
+    constructor(address _blsSignatureChecker) {
+        require(_blsSignatureChecker != address(0), "Invalid BLS signature checker address");
+        blsSignatureChecker = BLSSignatureChecker(_blsSignatureChecker);
     }
 
     /**

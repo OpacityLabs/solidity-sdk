@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
 import "../OpacitySDK.sol";
@@ -27,7 +27,11 @@ contract OpacityVerificationExample is OpacitySDK {
         bool success
     );
 
-    constructor() OpacitySDK() {}
+    /**
+     * @notice Constructor for OpacityVerificationExample
+     * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
+     */
+    constructor(address _blsSignatureChecker) OpacitySDK(_blsSignatureChecker) {}
 
     /**
      * @notice Verify private data using VerificationParams struct

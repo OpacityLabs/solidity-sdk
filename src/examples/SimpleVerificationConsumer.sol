@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
 import "../OpacitySDK.sol";
@@ -8,7 +8,11 @@ contract SimpleVerificationConsumer is OpacitySDK {
     
     event DataVerified(address user, string platform, string resource, string value, bool isValid);
 
-    constructor() OpacitySDK() {}
+    /**
+     * @notice Constructor for SimpleVerificationConsumer
+     * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
+     */
+    constructor(address _blsSignatureChecker) OpacitySDK(_blsSignatureChecker) {}
 
     /**
      * @notice Verify user data using VerificationParams struct
