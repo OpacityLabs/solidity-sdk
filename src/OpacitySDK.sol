@@ -12,6 +12,33 @@ import {
  * @dev Inherit from this contract to add opacity verification capabilities to your contract
  */
 abstract contract OpacitySDK {
+    
+    /**
+     * @notice Struct containing all parameters needed for verification
+     * @param quorumNumbers The quorum numbers to check signatures for
+     * @param referenceBlockNumber The block number to use as reference for operator set
+     * @param nonSignerStakesAndSignature The non-signer stakes and signature data computed off-chain
+     * @param targetAddress The target address for the operation
+     * @param platform The platform identifier
+     * @param resource The resource identifier
+     * @param value The value associated with the operation
+     * @param threshold The threshold value for the operation
+     * @param signature The signature string
+     * @param operatorCount The number of operators
+     */
+    struct VerificationParams {
+        bytes quorumNumbers;
+        uint32 referenceBlockNumber;
+        IBLSSignatureCheckerTypes.NonSignerStakesAndSignature nonSignerStakesAndSignature;
+        address targetAddress;
+        string platform;
+        string resource;
+        string value;
+        uint256 threshold;
+        string signature;
+        uint256 operatorCount;
+    }
+
     // The BLS signature checker contract
     BLSSignatureChecker public immutable blsSignatureChecker;
     // The address of the BLS signature checker contract
@@ -34,51 +61,31 @@ abstract contract OpacitySDK {
 
     /**
      * @notice Function to verify if a signature is valid
-     * @param quorumNumbers The quorum numbers to check signatures for
-     * @param referenceBlockNumber The block number to use as reference for operator set
-     * @param nonSignerStakesAndSignature The non-signer stakes and signature data computed off-chain
-     * @param targetAddress The target address for the operation
-     * @param platform The platform identifier
-     * @param resource The resource identifier
-     * @param value The value associated with the operation
-     * @param threshold The threshold value for the operation
-     * @param signature The signature string
-     * @param operatorCount The number of operators
+     * @param params The verification parameters wrapped in a struct
      * @return success Whether the verification succeeded
      */
-    function verify(
-        bytes calldata quorumNumbers,
-        uint32 referenceBlockNumber,
-        IBLSSignatureCheckerTypes.NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
-        address targetAddress,
-        string calldata platform,
-        string calldata resource,
-        string calldata value,
-        uint256 threshold,
-        string calldata signature,
-        uint256 operatorCount
-    ) external view returns (bool success) {
+    function verify(VerificationParams calldata params) external view returns (bool success) {
         // Check block number validity
-        require(referenceBlockNumber < block.number, FutureBlockNumber());
-        require((referenceBlockNumber + BLOCK_STALE_MEASURE) >= uint32(block.number), StaleBlockNumber());
+        require(params.referenceBlockNumber < block.number, FutureBlockNumber());
+        require((params.referenceBlockNumber + BLOCK_STALE_MEASURE) >= uint32(block.number), StaleBlockNumber());
 
         // Calculate message hash from parameters
         bytes32 msgHash = keccak256(abi.encode(
-            targetAddress,
-            platform,
-            resource,
-            value,
-            threshold,
-            signature,
-            operatorCount
+            params.targetAddress,
+            params.platform,
+            params.resource,
+            params.value,
+            params.threshold,
+            params.signature,
+            params.operatorCount
         ));
 
         // Verify the signatures using checkSignatures
         (IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,) =
-        blsSignatureChecker.checkSignatures(msgHash, quorumNumbers, referenceBlockNumber, nonSignerStakesAndSignature);
+        blsSignatureChecker.checkSignatures(msgHash, params.quorumNumbers, params.referenceBlockNumber, params.nonSignerStakesAndSignature);
 
         // Check that signatories own at least 66% of each quorum
-        for (uint256 i = 0; i < quorumNumbers.length; i++) {
+        for (uint256 i = 0; i < params.quorumNumbers.length; i++) {
             require(
                 stakeTotals.signedStakeForQuorum[i] * THRESHOLD_DENOMINATOR
                     >= stakeTotals.totalStakeForQuorum[i] * QUORUM_THRESHOLD,

@@ -30,7 +30,44 @@ contract OpacityVerificationExample is OpacitySDK {
     constructor() OpacitySDK() {}
 
     /**
-     * @notice Verify private data and store the verified value
+     * @notice Verify private data using VerificationParams struct
+     * @dev Primary interface that directly accepts the verification parameters struct
+     * @param params The verification parameters wrapped in a struct
+     * @return success Whether verification succeeded
+     * @return verifiedValue The verified value if successful
+     * @notice refrence the function below for the individual parameters
+     */
+    function verifyPrivateData(
+        VerificationParams calldata params
+    ) external returns (bool success, string memory verifiedValue) {
+        try this.verify(params) returns (bool verified) {
+            // Verification successful - store the verified value
+            bytes32 verificationHash = keccak256(abi.encodePacked(
+                params.targetAddress,
+                params.platform,
+                params.resource,
+                params.value,
+                block.timestamp
+            ));
+            
+            userVerifications[params.targetAddress] = VerificationResult({
+                isVerified: true,
+                verifiedValue: params.value,
+                timestamp: block.timestamp,
+                verificationHash: verificationHash
+            });
+            
+            emit DataVerified(params.targetAddress, params.value, verificationHash, true);
+            return (true, params.value);
+            
+        } catch {
+            return (false, "");
+        }
+    }
+
+    /**
+     * @notice Verify private data from individual parameters
+     * @dev Helper function that constructs VerificationParams struct from individual parameters
      * @param quorumNumbers The quorum numbers to check signatures for
      * @param referenceBlockNumber The block number to use as reference for operator set
      * @param nonSignerStakesAndSignature The non-signer stakes and signature data computed off-chain
@@ -44,7 +81,7 @@ contract OpacityVerificationExample is OpacitySDK {
      * @return success Whether verification succeeded
      * @return verifiedValue The verified value if successful
      */
-    function verifyPrivateData(
+    function verifyPrivateDataFromParams(
         bytes calldata quorumNumbers,
         uint32 referenceBlockNumber,
         IBLSSignatureCheckerTypes.NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
@@ -56,18 +93,21 @@ contract OpacityVerificationExample is OpacitySDK {
         string calldata signature,
         uint256 operatorCount
     ) external returns (bool success, string memory verifiedValue) {
-        try this.verify(
-            quorumNumbers,
-            referenceBlockNumber,
-            nonSignerStakesAndSignature,
-            user,
-            platform,
-            resource,
-            value,
-            threshold,
-            signature,
-            operatorCount
-        ) returns (bool verified) {
+        // Construct the VerificationParams struct
+        VerificationParams memory params = VerificationParams({
+            quorumNumbers: quorumNumbers,
+            referenceBlockNumber: referenceBlockNumber,
+            nonSignerStakesAndSignature: nonSignerStakesAndSignature,
+            targetAddress: user,
+            platform: platform,
+            resource: resource,
+            value: value,
+            threshold: threshold,
+            signature: signature,
+            operatorCount: operatorCount
+        });
+
+        try this.verify(params) returns (bool verified) {
             // Verification successful - store the verified value
             bytes32 verificationHash = keccak256(abi.encodePacked(
                 user,
@@ -88,8 +128,6 @@ contract OpacityVerificationExample is OpacitySDK {
             return (true, value);
             
         } catch {
-            // Verification failed
-            emit DataVerified(user, "", bytes32(0), false);
             return (false, "");
         }
     }
