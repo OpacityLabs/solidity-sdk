@@ -17,7 +17,7 @@ abstract contract OpacitySDK {
      * @param quorumNumbers The quorum numbers to check signatures for
      * @param referenceBlockNumber The block number to use as reference for operator set
      * @param nonSignerStakesAndSignature The non-signer stakes and signature data computed off-chain
-     * @param targetAddress The target address for the operation
+     * @param userAddress The target address for the operation
      * @param platform The platform identifier
      * @param resource The resource identifier
      * @param value The value associated with the operation
@@ -29,7 +29,7 @@ abstract contract OpacitySDK {
         bytes quorumNumbers;
         uint32 referenceBlockNumber;
         IBLSSignatureCheckerTypes.NonSignerStakesAndSignature nonSignerStakesAndSignature;
-        address targetAddress;
+        address userAddress;
         string platform;
         string resource;
         string value;
@@ -74,7 +74,7 @@ abstract contract OpacitySDK {
         // Calculate message hash from parameters
         bytes32 msgHash = keccak256(
             abi.encode(
-                params.targetAddress,
+                params.userAddress,
                 params.platform,
                 params.resource,
                 params.value,

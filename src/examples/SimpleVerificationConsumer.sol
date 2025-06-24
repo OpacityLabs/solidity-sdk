@@ -21,7 +21,7 @@ contract SimpleVerificationConsumer is OpacitySDK {
     function verifyUserData(VerificationParams calldata params) public returns (bool) {
         try this.verify(params) returns (bool verified) {
             // Verification successful - emit event
-            emit DataVerified(params.targetAddress, params.platform, params.resource, params.value, verified); // derefrence by using the struct params
+            emit DataVerified(params.userAddress, params.platform, params.resource, params.value, verified); // derefrence by using the struct params
             return verified;
         } catch {
             return false;
