@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: AGPL-3.0-only
+pragma solidity ^0.8.30;
 
 import "../OpacitySDK.sol";
 import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
@@ -35,7 +35,6 @@ contract OpacityVerificationExample is OpacitySDK {
      * @param params The verification parameters wrapped in a struct
      * @return success Whether verification succeeded
      * @return verifiedValue The verified value if successful
-     * @notice refrence the function below for the individual parameters
      */
     function verifyPrivateData(
         VerificationParams calldata params
@@ -51,81 +50,14 @@ contract OpacityVerificationExample is OpacitySDK {
             ));
             
             userVerifications[params.targetAddress] = VerificationResult({
-                isVerified: true,
+                isVerified: verified,
                 verifiedValue: params.value,
                 timestamp: block.timestamp,
                 verificationHash: verificationHash
             });
             
-            emit DataVerified(params.targetAddress, params.value, verificationHash, true);
-            return (true, params.value);
-            
-        } catch {
-            return (false, "");
-        }
-    }
-
-    /**
-     * @notice Verify private data from individual parameters
-     * @dev Helper function that constructs VerificationParams struct from individual parameters
-     * @param quorumNumbers The quorum numbers to check signatures for
-     * @param referenceBlockNumber The block number to use as reference for operator set
-     * @param nonSignerStakesAndSignature The non-signer stakes and signature data computed off-chain
-     * @param user The user whose data is being verified
-     * @param platform The platform/source of the data
-     * @param resource The specific resource or data type being verified
-     * @param value The value being verified
-     * @param threshold The threshold for validation
-     * @param signature The operator's signature
-     * @param operatorCount The number of operators participating
-     * @return success Whether verification succeeded
-     * @return verifiedValue The verified value if successful
-     */
-    function verifyPrivateDataFromParams(
-        bytes calldata quorumNumbers,
-        uint32 referenceBlockNumber,
-        IBLSSignatureCheckerTypes.NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
-        address user,
-        string calldata platform,
-        string calldata resource,
-        string calldata value,
-        uint256 threshold,
-        string calldata signature,
-        uint256 operatorCount
-    ) external returns (bool success, string memory verifiedValue) {
-        // Construct the VerificationParams struct
-        VerificationParams memory params = VerificationParams({
-            quorumNumbers: quorumNumbers,
-            referenceBlockNumber: referenceBlockNumber,
-            nonSignerStakesAndSignature: nonSignerStakesAndSignature,
-            targetAddress: user,
-            platform: platform,
-            resource: resource,
-            value: value,
-            threshold: threshold,
-            signature: signature,
-            operatorCount: operatorCount
-        });
-
-        try this.verify(params) returns (bool verified) {
-            // Verification successful - store the verified value
-            bytes32 verificationHash = keccak256(abi.encodePacked(
-                user,
-                platform,
-                resource,
-                value,
-                block.timestamp
-            ));
-            
-            userVerifications[user] = VerificationResult({
-                isVerified: true,
-                verifiedValue: value,
-                timestamp: block.timestamp,
-                verificationHash: verificationHash
-            });
-            
-            emit DataVerified(user, value, verificationHash, true);
-            return (true, value);
+            emit DataVerified(params.targetAddress, params.value, verificationHash, verified); // derefrence by using the struct params
+            return (verified, params.value);
             
         } catch {
             return (false, "");
