@@ -34,13 +34,10 @@ contract SimpleVerificationConsumer is OpacitySDK {
             threshold,
             signature,
             operatorCount
-        ) returns (
-            IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,
-            bytes32 signatoryRecordHash
-        ) {
+        ) returns (bool success) {
             // Verification successful - emit event
             emit DataVerified(user, platform, resource, value, true);
-            return true;
+            return success;
             
         } catch {
             return false;

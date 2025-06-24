@@ -67,10 +67,7 @@ contract OpacityVerificationExample is OpacitySDK {
             threshold,
             signature,
             operatorCount
-        ) returns (
-            IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,
-            bytes32 signatoryRecordHash
-        ) {
+        ) returns (bool verified) {
             // Verification successful - store the verified value
             bytes32 verificationHash = keccak256(abi.encodePacked(
                 user,

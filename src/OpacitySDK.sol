@@ -44,8 +44,7 @@ abstract contract OpacitySDK {
      * @param threshold The threshold value for the operation
      * @param signature The signature string
      * @param operatorCount The number of operators
-     * @return stakeTotals The stake totals for verification
-     * @return signatoryRecordHash The hash of signatory record
+     * @return success Whether the verification succeeded
      */
     function verify(
         bytes calldata quorumNumbers,
@@ -58,10 +57,7 @@ abstract contract OpacitySDK {
         uint256 threshold,
         string calldata signature,
         uint256 operatorCount
-    ) external view returns (
-        IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,
-        bytes32 signatoryRecordHash
-    ) {
+    ) external view returns (bool success) {
         // Check block number validity
         require(referenceBlockNumber < block.number, FutureBlockNumber());
         require((referenceBlockNumber + BLOCK_STALE_MEASURE) >= uint32(block.number), StaleBlockNumber());
@@ -78,7 +74,7 @@ abstract contract OpacitySDK {
         ));
 
         // Verify the signatures using checkSignatures
-        (stakeTotals, signatoryRecordHash) =
+        (IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,) =
         blsSignatureChecker.checkSignatures(msgHash, quorumNumbers, referenceBlockNumber, nonSignerStakesAndSignature);
 
         // Check that signatories own at least 66% of each quorum
@@ -89,6 +85,8 @@ abstract contract OpacitySDK {
                 InsufficientQuorumThreshold()
             );
         }
+        
+        return true;
     }
 
     /**
