@@ -6,7 +6,7 @@ import "@eigenlayer-middleware/BLSSignatureChecker.sol";
 import "@eigenlayer-middleware/interfaces/IRegistryCoordinator.sol";
 
 contract DeployBLSSignatureChecker is Script {
-    address constant REGISTRY_COORDINATOR = 0x2E5f76f1fF6347319C0FbE821F0F11afDf37DcCe;
+    address constant REGISTRY_COORDINATOR = 0x3e43AA225b5cB026C5E8a53f62572b10D526a50B;
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
