@@ -1,49 +1,30 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.30;
 
 import "../OpacitySDK.sol";
 import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 contract SimpleVerificationConsumer is OpacitySDK {
-    
     event DataVerified(address user, string platform, string resource, string value, bool isValid);
 
-    constructor() OpacitySDK() {}
+    /**
+     * @notice Constructor for SimpleVerificationConsumer
+     * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
+     */
+    constructor(address _blsSignatureChecker) OpacitySDK(_blsSignatureChecker) {}
 
-    function verifyUserData(
-        bytes calldata quorumNumbers,
-        uint32 referenceBlockNumber,
-        IBLSSignatureCheckerTypes.NonSignerStakesAndSignature calldata nonSignerStakesAndSignature,
-        address user,
-        string calldata platform,
-        string calldata resource,
-        string calldata value,
-        uint256 threshold,
-        string calldata signature,
-        uint256 operatorCount
-    ) public returns (bool) {
-        
-        try this.verify(
-            quorumNumbers,
-            referenceBlockNumber,
-            nonSignerStakesAndSignature,
-            user,
-            platform,
-            resource,
-            value,
-            threshold,
-            signature,
-            operatorCount
-        ) returns (
-            IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,
-            bytes32 signatoryRecordHash
-        ) {
+    /**
+     * @notice Verify user data using VerificationParams struct
+     * @dev Primary interface - cleaner way to use the OpacitySDK
+     * @param params The VerificationParams struct containing all verification parameters
+     */
+    function verifyUserData(VerificationParams calldata params) public returns (bool) {
+        try this.verify(params) returns (bool verified) {
             // Verification successful - emit event
-            emit DataVerified(user, platform, resource, value, true);
-            return true;
-            
+            emit DataVerified(params.targetAddress, params.platform, params.resource, params.value, verified); // derefrence by using the struct params
+            return verified;
         } catch {
             return false;
         }
     }
-} 
+}

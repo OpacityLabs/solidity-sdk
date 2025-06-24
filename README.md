@@ -1,66 +1,163 @@
-## Foundry
+# OpacitySDK for Solidity
+## Quick Start
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+### 1. Clone and Setup
 
-Foundry consists of:
+```bash
+git clone <repository-url>
+cd opacity-solidity-sdk
+forge install
+```
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### 2. Environment Setup
 
-## Documentation
+```bash
+# Copy the example environment file
+cp .env.example .env
 
-https://book.getfoundry.sh/
+# Edit .env and add your private key
+PRIVATE_KEY=your_private_key_here
+```
 
-## Usage
+### 3. Deploy on Holesky Testnet
+
+```bash
+# Deploy all contracts (BLS signature checker + examples)
+forge script script/DeployOpacityExamples.s.sol:DeployOpacityExamples --rpc-url holesky --broadcast
+```
+
+This command will:
+1. Deploy the BLS signature checker contract
+2. Deploy the SimpleVerificationConsumer example
+3. Deploy the OpacityVerificationExample contract
+4. Verify all contracts are properly linked
+5. Output all deployed addresses
+
+### Example Deployment Output 
+
+```
+========================================
+         DEPLOYMENT SUMMARY
+  ========================================
+  Registry Coordinator:         0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
+  BLS Signature Checker:        0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
+  Simple Verification Consumer: 0x44001Acab2Cca67fd97a50f8261bC5019Db6741a
+  Opacity Verification Example: 0x6135B0bD49686781D398f05eDD4A9deC2b6f923F
+  ========================================
+  
+=== Verification Checks ===
+  Simple Consumer BLS Address:  0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
+  Storage Consumer BLS Address: 0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
+  Simple Consumer properly linked:  true
+  Storage Consumer properly linked: true
+  All contracts deployed and linked successfully!
+```
+
+### Contract Links on Holeskyscan
+
+- [BLS Signature Checker](https://holesky.etherscan.io/address/0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca)
+- [Simple Verification Consumer](https://holesky.etherscan.io/address/0x44001Acab2Cca67fd97a50f8261bC5019Db6741a) 
+- [Opacity Verification Example](https://holesky.etherscan.io/address/0x6135B0bD49686781D398f05eDD4A9deC2b6f923F)
+
+## Usage Examples
+
+### Basic Verification (SimpleVerificationConsumer)
+
+```solidity
+// Create verification parameters
+OpacitySDK.VerificationParams memory params = OpacitySDK.VerificationParams({
+    quorumNumbers: quorumNumbers,
+    referenceBlockNumber: referenceBlockNumber,
+    nonSignerStakesAndSignature: nonSignerStakesAndSignature,
+    targetAddress: userAddress,
+    platform: "twitter",
+    resource: "followers",
+    value: "10000",
+    threshold: 1000,
+    signature: "signature_data",
+    operatorCount: 5
+});
+
+// Verify the data
+bool success = simpleConsumer.verifyUserData(params);
+```
+
+### Advanced Verification with Storage (OpacityVerificationExample)
+
+```solidity
+// Verify and store the result
+(bool success, string memory verifiedValue) = opacityExample.verifyPrivateData(params);
+
+if (success) {
+    // Get stored verification details
+    (bool isValid, string memory value, uint256 timestamp, bytes32 hash) = 
+        opacityExample.getUserVerification(userAddress);
+}
+```
+
+## Development
 
 ### Build
 
-```shell
-$ forge build
+```bash
+forge build
 ```
 
 ### Test
 
-```shell
-$ forge test
+```bash
+forge test
 ```
+- no tests currently
 
-### Format
+### Format Code
 
-```shell
-$ forge fmt
+```bash
+forge fmt
 ```
 
 ### Gas Snapshots
 
-```shell
-$ forge snapshot
+```bash
+forge snapshot
 ```
 
-### Anvil
+## Contract Architecture
 
-```shell
-$ anvil
-```
+### OpacitySDK (Base Contract)
+- **VerificationParams struct**: Wraps all verification parameters
+- **verify()**: Main verification function returning boolean
+- **Configurable thresholds**: Quorum and block staleness settings
 
-### Deploy
+### Example Contracts
+- **SimpleVerificationConsumer**: Demonstrates basic verification with events
+- **OpacityVerificationExample**: Shows advanced usage with storage and retrieval functions
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+## Dependencies
 
-### Cast
+- **EigenLayer Middleware**: BLS signature checking and registry coordination
+- **Foundry**: Development and testing framework
+- **OpenZeppelin**: Standard library contracts (via EigenLayer)
 
-```shell
-$ cast <subcommand>
-```
+## Important 
+Make sure not to change the registry coordinator address in the deployment scripts
+---
 
-### Help
+## Foundry Documentation
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+For more information about Foundry, visit: https://book.getfoundry.sh/
+
+### Additional Foundry Commands
+
+```bash
+# Local development node
+anvil
+
+# Cast commands for chain interaction
+cast <subcommand>
+
+# Help
+forge --help
+anvil --help
+cast --help
 ```
