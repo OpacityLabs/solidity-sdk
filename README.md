@@ -40,14 +40,14 @@ This command will:
          DEPLOYMENT SUMMARY
   ========================================
   Registry Coordinator:         0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
-  BLS Signature Checker:        0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
-  Simple Verification Consumer: 0x44001Acab2Cca67fd97a50f8261bC5019Db6741a
-  Opacity Verification Example: 0x6135B0bD49686781D398f05eDD4A9deC2b6f923F
+  BLS Signature Checker:        0xD00873BbA73E4aecb5709d31539081E0a45a67bC
+  Simple Verification Consumer: 0x8d1c340E65EBa63d304448c9bC6b60A161EB0AF5
+  Opacity Verification Example: 0xc576315020bF2FaFC3bE48228bFA35C376CC02f0
   ========================================
   
 === Verification Checks ===
-  Simple Consumer BLS Address:  0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
-  Storage Consumer BLS Address: 0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
+  Simple Consumer BLS Address:  0xD00873BbA73E4aecb5709d31539081E0a45a67bC
+  Storage Consumer BLS Address: 0xD00873BbA73E4aecb5709d31539081E0a45a67bC
   Simple Consumer properly linked:  true
   Storage Consumer properly linked: true
   All contracts deployed and linked successfully!
@@ -55,9 +55,9 @@ This command will:
 
 ### Contract Links on Holeskyscan
 
-- [BLS Signature Checker](https://holesky.etherscan.io/address/0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca)
-- [Simple Verification Consumer](https://holesky.etherscan.io/address/0x44001Acab2Cca67fd97a50f8261bC5019Db6741a) 
-- [Opacity Verification Example](https://holesky.etherscan.io/address/0x6135B0bD49686781D398f05eDD4A9deC2b6f923F)
+- [BLS Signature Checker](https://holesky.etherscan.io/address/0xD00873BbA73E4aecb5709d31539081E0a45a67bC)
+- [Simple Verification Consumer](https://holesky.etherscan.io/address/0x8d1c340E65EBa63d304448c9bC6b60A161EB0AF5)
+- [Opacity Verification Example](https://holesky.etherscan.io/address/0xc576315020bF2FaFC3bE48228bFA35C376CC02f0)
 
 ## Usage Examples
 

@@ -21,9 +21,8 @@ abstract contract OpacitySDK {
      * @param platform The platform identifier
      * @param resource The resource identifier
      * @param value The value associated with the operation
-     * @param threshold The threshold value for the operation
+     * @param operatorThreshold The operator threshold value for the operation
      * @param signature The signature string
-     * @param operatorCount The number of operators
      */
     struct VerificationParams {
         bytes quorumNumbers;
@@ -33,9 +32,8 @@ abstract contract OpacitySDK {
         string platform;
         string resource;
         string value;
-        uint256 threshold;
+        uint256 operatorThreshold;
         string signature;
-        uint256 operatorCount;
     }
 
     // The BLS signature checker contract
@@ -78,9 +76,8 @@ abstract contract OpacitySDK {
                 params.platform,
                 params.resource,
                 params.value,
-                params.threshold,
-                params.signature,
-                params.operatorCount
+                params.operatorThreshold,
+                params.signature
             )
         );
 
