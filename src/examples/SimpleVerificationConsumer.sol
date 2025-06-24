@@ -5,7 +5,6 @@ import "../OpacitySDK.sol";
 import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 contract SimpleVerificationConsumer is OpacitySDK {
-    
     event DataVerified(address user, string platform, string resource, string value, bool isValid);
 
     /**
@@ -19,17 +18,13 @@ contract SimpleVerificationConsumer is OpacitySDK {
      * @dev Primary interface - cleaner way to use the OpacitySDK
      * @param params The VerificationParams struct containing all verification parameters
      */
-    function verifyUserData(
-        VerificationParams calldata params
-    ) public returns (bool) {
-        
+    function verifyUserData(VerificationParams calldata params) public returns (bool) {
         try this.verify(params) returns (bool verified) {
-            // Verification successful - emit event  
+            // Verification successful - emit event
             emit DataVerified(params.targetAddress, params.platform, params.resource, params.value, verified); // derefrence by using the struct params
             return verified;
-            
         } catch {
             return false;
         }
     }
-} 
+}

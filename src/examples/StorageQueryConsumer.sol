@@ -10,22 +10,16 @@ import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
  * @dev This contract shows how to verify private data and retrieve the verified values
  */
 contract OpacityVerificationExample is OpacitySDK {
-    
     struct VerificationResult {
         bool isVerified;
         string verifiedValue;
         uint256 timestamp;
         bytes32 verificationHash;
     }
-    
+
     mapping(address => VerificationResult) public userVerifications;
-    
-    event DataVerified(
-        address indexed user, 
-        string verifiedValue,
-        bytes32 verificationHash, 
-        bool success
-    );
+
+    event DataVerified(address indexed user, string verifiedValue, bytes32 verificationHash, bool success);
 
     /**
      * @notice Constructor for OpacityVerificationExample
@@ -40,29 +34,25 @@ contract OpacityVerificationExample is OpacitySDK {
      * @return success Whether verification succeeded
      * @return verifiedValue The verified value if successful
      */
-    function verifyPrivateData(
-        VerificationParams calldata params
-    ) external returns (bool success, string memory verifiedValue) {
+    function verifyPrivateData(VerificationParams calldata params)
+        external
+        returns (bool success, string memory verifiedValue)
+    {
         try this.verify(params) returns (bool verified) {
             // Verification successful - store the verified value
-            bytes32 verificationHash = keccak256(abi.encodePacked(
-                params.targetAddress,
-                params.platform,
-                params.resource,
-                params.value,
-                block.timestamp
-            ));
-            
+            bytes32 verificationHash = keccak256(
+                abi.encodePacked(params.targetAddress, params.platform, params.resource, params.value, block.timestamp)
+            );
+
             userVerifications[params.targetAddress] = VerificationResult({
                 isVerified: verified,
                 verifiedValue: params.value,
                 timestamp: block.timestamp,
                 verificationHash: verificationHash
             });
-            
+
             emit DataVerified(params.targetAddress, params.value, verificationHash, verified); // derefrence by using the struct params
             return (verified, params.value);
-            
         } catch {
             return (false, "");
         }
@@ -73,9 +63,7 @@ contract OpacityVerificationExample is OpacitySDK {
      * @param user The user to check
      * @return verifiedValue The verified value, empty string if not verified
      */
-    function getVerifiedValue(
-        address user
-    ) external view returns (string memory verifiedValue) {
+    function getVerifiedValue(address user) external view returns (string memory verifiedValue) {
         VerificationResult memory result = userVerifications[user];
         return result.isVerified ? result.verifiedValue : "";
     }
@@ -88,14 +76,11 @@ contract OpacityVerificationExample is OpacitySDK {
      * @return timestamp When the verification was made
      * @return verificationHash The hash of the verification
      */
-    function getUserVerification(
-        address user
-    ) external view returns (
-        bool isValid, 
-        string memory verifiedValue,
-        uint256 timestamp, 
-        bytes32 verificationHash
-    ) {
+    function getUserVerification(address user)
+        external
+        view
+        returns (bool isValid, string memory verifiedValue, uint256 timestamp, bytes32 verificationHash)
+    {
         VerificationResult memory result = userVerifications[user];
         return (result.isVerified, result.verifiedValue, result.timestamp, result.verificationHash);
     }
@@ -107,12 +92,13 @@ contract OpacityVerificationExample is OpacitySDK {
      * @return isValid Whether the verification is still valid
      * @return verifiedValue The verified value if still valid
      */
-    function getValidVerificationValue(
-        address user,
-        uint256 maxAge
-    ) external view returns (bool isValid, string memory verifiedValue) {
+    function getValidVerificationValue(address user, uint256 maxAge)
+        external
+        view
+        returns (bool isValid, string memory verifiedValue)
+    {
         VerificationResult memory result = userVerifications[user];
         bool stillValid = result.isVerified && (block.timestamp - result.timestamp) <= maxAge;
         return (stillValid, stillValid ? result.verifiedValue : "");
     }
-} 
+}

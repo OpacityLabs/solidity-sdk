@@ -12,7 +12,6 @@ import {
  * @dev Inherit from this contract to add opacity verification capabilities to your contract
  */
 abstract contract OpacitySDK {
-    
     /**
      * @notice Struct containing all parameters needed for verification
      * @param quorumNumbers The quorum numbers to check signatures for
@@ -73,19 +72,22 @@ abstract contract OpacitySDK {
         require((params.referenceBlockNumber + BLOCK_STALE_MEASURE) >= uint32(block.number), StaleBlockNumber());
 
         // Calculate message hash from parameters
-        bytes32 msgHash = keccak256(abi.encode(
-            params.targetAddress,
-            params.platform,
-            params.resource,
-            params.value,
-            params.threshold,
-            params.signature,
-            params.operatorCount
-        ));
+        bytes32 msgHash = keccak256(
+            abi.encode(
+                params.targetAddress,
+                params.platform,
+                params.resource,
+                params.value,
+                params.threshold,
+                params.signature,
+                params.operatorCount
+            )
+        );
 
         // Verify the signatures using checkSignatures
-        (IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,) =
-        blsSignatureChecker.checkSignatures(msgHash, params.quorumNumbers, params.referenceBlockNumber, params.nonSignerStakesAndSignature);
+        (IBLSSignatureCheckerTypes.QuorumStakeTotals memory stakeTotals,) = blsSignatureChecker.checkSignatures(
+            msgHash, params.quorumNumbers, params.referenceBlockNumber, params.nonSignerStakesAndSignature
+        );
 
         // Check that signatories own at least 66% of each quorum
         for (uint256 i = 0; i < params.quorumNumbers.length; i++) {
@@ -95,7 +97,7 @@ abstract contract OpacitySDK {
                 InsufficientQuorumThreshold()
             );
         }
-        
+
         return true;
     }
 
@@ -114,4 +116,4 @@ abstract contract OpacitySDK {
     function getBlockStaleMeasure() external view returns (uint32) {
         return BLOCK_STALE_MEASURE;
     }
-} 
+}
