@@ -33,25 +33,31 @@ This command will:
 4. Verify all contracts are properly linked
 5. Output all deployed addresses
 
-### Example Deployment Output
+### Example Deployment Output 
 
 ```
 ========================================
-       DEPLOYMENT SUMMARY
-========================================
-Registry Coordinator:         0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
-BLS Signature Checker:        0x3031d2c33FB9d7e85bC03C1011D9b4aA571576D2
-Simple Verification Consumer: 0x70B13fB637d52dB8a8Fd27580AE75045AD70b402
-Opacity Verification Example: 0x337c51432123b3Fe5CbE90e8681461B98B381B22
-========================================
-
+         DEPLOYMENT SUMMARY
+  ========================================
+  Registry Coordinator:         0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
+  BLS Signature Checker:        0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
+  Simple Verification Consumer: 0x44001Acab2Cca67fd97a50f8261bC5019Db6741a
+  Opacity Verification Example: 0x6135B0bD49686781D398f05eDD4A9deC2b6f923F
+  ========================================
+  
 === Verification Checks ===
-Simple Consumer BLS Address:  0x3031d2c33FB9d7e85bC03C1011D9b4aA571576D2
-Storage Consumer BLS Address: 0x3031d2c33FB9d7e85bC03C1011D9b4aA571576D2
-Simple Consumer properly linked:  true
-Storage Consumer properly linked: true
-All contracts deployed and linked successfully!
+  Simple Consumer BLS Address:  0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
+  Storage Consumer BLS Address: 0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca
+  Simple Consumer properly linked:  true
+  Storage Consumer properly linked: true
+  All contracts deployed and linked successfully!
 ```
+
+### Contract Links on Holeskyscan
+
+- [BLS Signature Checker](https://holesky.etherscan.io/address/0x95af3bC6d73Fc8677B419fA8f2E088A1BfBA82Ca)
+- [Simple Verification Consumer](https://holesky.etherscan.io/address/0x44001Acab2Cca67fd97a50f8261bC5019Db6741a) 
+- [Opacity Verification Example](https://holesky.etherscan.io/address/0x6135B0bD49686781D398f05eDD4A9deC2b6f923F)
 
 ## Usage Examples
 
