@@ -102,6 +102,7 @@ forge build
 ```bash
 forge test
 ```
+- no tests currently
 
 ### Format Code
 
