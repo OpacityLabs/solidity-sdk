@@ -5,11 +5,11 @@ import "../OpacitySDK.sol";
 import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 /**
- * @title OpacityVerificationExample
+ * @title StorageQueryConsumer
  * @notice Example contract demonstrating basic opacity verification using OpacitySDK
  * @dev This contract shows how to verify private data and retrieve the verified values
  */
-contract OpacityVerificationExample is OpacitySDK {
+contract StorageQueryConsumer is OpacitySDK {
     struct VerificationResult {
         bool isVerified;
         string verifiedValue;
@@ -22,7 +22,7 @@ contract OpacityVerificationExample is OpacitySDK {
     event DataVerified(address indexed user, string verifiedValue, bytes32 verificationHash, bool success);
 
     /**
-     * @notice Constructor for OpacityVerificationExample
+     * @notice Constructor for StorageQueryConsumer
      * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
      */
     constructor(address _blsSignatureChecker) OpacitySDK(_blsSignatureChecker) {}
