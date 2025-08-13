@@ -13,26 +13,24 @@ import "../src/examples/StorageQueryConsumer.sol";
  * @dev Deploys BLS signature checker and both example contracts
  */
 contract DeployOpacityExamples is Script {
-    // Registry Coordinator address (testnet holesky)
-    address constant REGISTRY_COORDINATOR = 0x3e43AA225b5cB026C5E8a53f62572b10D526a50B;
 
     // Deployed contract addresses
     BLSSignatureChecker public blsSignatureChecker;
     SimpleVerificationConsumer public simpleVerificationConsumer;
     StorageQueryConsumer public storageQueryConsumer;
 
-    function run() external {
+    function run(address registryCoordinator) external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         console.log("Starting OpacitySDK deployment...");
         console.log("Deployer address:", vm.addr(deployerPrivateKey));
-        console.log("Registry Coordinator:", REGISTRY_COORDINATOR);
+        console.log("Registry Coordinator:", registryCoordinator);
 
         vm.startBroadcast(deployerPrivateKey);
 
         // Step 1: Deploy BLS Signature Checker
         console.log("\n=== Step 1: Deploying BLS Signature Checker ===");
-        blsSignatureChecker = new BLSSignatureChecker(IRegistryCoordinator(REGISTRY_COORDINATOR));
+        blsSignatureChecker = new BLSSignatureChecker(IRegistryCoordinator(registryCoordinator));
         console.log("BLS Signature Checker deployed at:", address(blsSignatureChecker));
 
         // Step 2: Deploy Simple Verification Consumer
@@ -48,17 +46,18 @@ contract DeployOpacityExamples is Script {
         vm.stopBroadcast();
 
         // Print deployment summary
-        printDeploymentSummary();
+        printDeploymentSummary(registryCoordinator);
     }
 
     /**
      * @notice Print a comprehensive deployment summary
+     * @param registryCoordinator The registry coordinator address used for deployment
      */
-    function printDeploymentSummary() internal view {
+    function printDeploymentSummary(address registryCoordinator) internal view {
         console.log("\n" "========================================");
         console.log("       DEPLOYMENT SUMMARY");
         console.log("========================================");
-        console.log("Registry Coordinator:        ", REGISTRY_COORDINATOR);
+        console.log("Registry Coordinator:        ", registryCoordinator);
         console.log("BLS Signature Checker:       ", address(blsSignatureChecker));
         console.log("Simple Verification Consumer:", address(simpleVerificationConsumer));
         console.log("Storage Query Consumer:      ", address(storageQueryConsumer));
