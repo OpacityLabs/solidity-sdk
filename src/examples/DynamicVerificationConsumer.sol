@@ -9,7 +9,6 @@ import "../libraries/RiskAssessment.sol";
  * @notice Example implementation of dynamic threshold verification
  */
 contract DynamicVerificationConsumer is DynamicThresholdSDK {
-    
     struct VerificationResult {
         bool verified;
         RiskAssessment.RiskLevel riskLevel;
@@ -18,18 +17,18 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
         string platform;
         string resource;
     }
-    
+
     // Mapping from verification ID to result
     mapping(bytes32 => VerificationResult) public verificationHistory;
-    
+
     // Mapping from user to their verification IDs
     mapping(address => bytes32[]) public userVerificationIds;
-    
+
     // Statistics
     uint256 public totalVerifications;
     uint256 public successfulVerifications;
     mapping(RiskAssessment.RiskLevel => uint256) public verificationsByRiskLevel;
-    
+
     event VerificationAttempt(
         address indexed user,
         bytes32 indexed verificationId,
@@ -39,7 +38,7 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
         uint8 threshold,
         bool success
     );
-    
+
     event RiskAnalysis(
         address indexed user,
         string platform,
@@ -48,7 +47,7 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
         RiskAssessment.RiskLevel riskLevel,
         uint8 recommendedThreshold
     );
-    
+
     /**
      * @notice Constructor for DynamicVerificationConsumer
      * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
@@ -57,7 +56,7 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
         // Additional initialization for common platforms/resources if needed
         _initializeAdditionalSettings();
     }
-    
+
     /**
      * @notice Verify user data with dynamic threshold
      * @param params The verification parameters
@@ -65,26 +64,21 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
      * @return riskLevel The risk level determined
      * @return threshold The threshold that was required
      */
-    function verifyWithDynamicThreshold(
-        VerificationParams calldata params
-    ) external returns (bool verified, RiskAssessment.RiskLevel riskLevel, uint8 threshold) {
+    function verifyWithDynamicThreshold(VerificationParams calldata params)
+        external
+        returns (bool verified, RiskAssessment.RiskLevel riskLevel, uint8 threshold)
+    {
         // Pre-calculate risk for transparency
         (riskLevel, threshold) = calculateDynamicThreshold(params);
-        
+
         // Generate verification ID
-        bytes32 verificationId = keccak256(
-            abi.encode(
-                params.userAddress,
-                params.platform,
-                params.resource,
-                block.timestamp
-            )
-        );
-        
+        bytes32 verificationId =
+            keccak256(abi.encode(params.userAddress, params.platform, params.resource, block.timestamp));
+
         // Increment total verifications
         totalVerifications++;
         verificationsByRiskLevel[riskLevel]++;
-        
+
         // Log the attempt
         emit VerificationAttempt(
             params.userAddress,
@@ -95,7 +89,7 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
             threshold,
             false // Will update if successful
         );
-        
+
         try this.verify(params) returns (bool success) {
             if (success) {
                 // Store successful verification
@@ -107,21 +101,15 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
                     platform: params.platform,
                     resource: params.resource
                 });
-                
+
                 // Add to user's verification history
                 userVerificationIds[params.userAddress].push(verificationId);
-                
+
                 // Increment successful verifications
                 successfulVerifications++;
-                
+
                 emit VerificationAttempt(
-                    params.userAddress,
-                    verificationId,
-                    params.platform,
-                    params.resource,
-                    riskLevel,
-                    threshold,
-                    true
+                    params.userAddress, verificationId, params.platform, params.resource, riskLevel, threshold, true
                 );
             }
             return (success, riskLevel, threshold);
@@ -135,14 +123,14 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
                 platform: params.platform,
                 resource: params.resource
             });
-            
+
             return (false, riskLevel, threshold);
         } catch {
             // Unknown error
             return (false, riskLevel, threshold);
         }
     }
-    
+
     /**
      * @notice Get recommended threshold for given parameters
      * @param platform The platform identifier
@@ -151,51 +139,40 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
      * @return riskLevel The calculated risk level
      * @return threshold The recommended threshold
      */
-    function getRecommendedThreshold(
-        string memory platform,
-        string memory resource,
-        uint256 value
-    ) external view returns (RiskAssessment.RiskLevel riskLevel, uint8 threshold) {
+    function getRecommendedThreshold(string memory platform, string memory resource, uint256 value)
+        external
+        view
+        returns (RiskAssessment.RiskLevel riskLevel, uint8 threshold)
+    {
         VerificationParams memory params;
         params.platform = platform;
         params.resource = resource;
         params.operatorThreshold = value;
         params.userAddress = msg.sender;
-        
+
         (riskLevel, threshold) = calculateDynamicThreshold(params);
-        
+
         return (riskLevel, threshold);
     }
-    
+
     /**
      * @notice Analyze risk for specific parameters and emit event
      * @param platform The platform identifier
      * @param resource The resource identifier
      * @param value The value/amount involved
      */
-    function analyzeRisk(
-        string memory platform,
-        string memory resource,
-        uint256 value
-    ) external {
+    function analyzeRisk(string memory platform, string memory resource, uint256 value) external {
         VerificationParams memory params;
         params.platform = platform;
         params.resource = resource;
         params.operatorThreshold = value;
         params.userAddress = msg.sender;
-        
+
         (RiskAssessment.RiskLevel riskLevel, uint8 threshold) = calculateDynamicThreshold(params);
-        
-        emit RiskAnalysis(
-            msg.sender,
-            platform,
-            resource,
-            value,
-            riskLevel,
-            threshold
-        );
+
+        emit RiskAnalysis(msg.sender, platform, resource, value, riskLevel, threshold);
     }
-    
+
     /**
      * @notice Get user's verification history
      * @param user The user address
@@ -204,7 +181,7 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
     function getUserVerificationHistory(address user) external view returns (bytes32[] memory) {
         return userVerificationIds[user];
     }
-    
+
     /**
      * @notice Get detailed verification result
      * @param verificationId The verification ID
@@ -213,18 +190,14 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
     function getVerificationResult(bytes32 verificationId) external view returns (VerificationResult memory) {
         return verificationHistory[verificationId];
     }
-    
+
     /**
      * @notice Get contract statistics
      * @return total Total verifications attempted
      * @return successful Successful verifications
      * @return successRate Success rate as percentage
      */
-    function getStatistics() external view returns (
-        uint256 total,
-        uint256 successful,
-        uint256 successRate
-    ) {
+    function getStatistics() external view returns (uint256 total, uint256 successful, uint256 successRate) {
         total = totalVerifications;
         successful = successfulVerifications;
         if (total > 0) {
@@ -232,34 +205,32 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
         }
         return (total, successful, successRate);
     }
-    
+
     /**
      * @notice Get verification count by risk level
      * @param level The risk level to query
      * @return count Number of verifications at this risk level
      */
-    function getVerificationCountByRiskLevel(
-        RiskAssessment.RiskLevel level
-    ) external view returns (uint256) {
+    function getVerificationCountByRiskLevel(RiskAssessment.RiskLevel level) external view returns (uint256) {
         return verificationsByRiskLevel[level];
     }
-    
+
     /**
      * @notice Batch update platform trust levels
      * @param platforms Array of platform identifiers
      * @param trustLevels Array of trust levels
      */
-    function batchUpdatePlatformTrust(
-        string[] memory platforms,
-        RiskAssessment.PlatformTrust[] memory trustLevels
-    ) external onlyOwner {
+    function batchUpdatePlatformTrust(string[] memory platforms, RiskAssessment.PlatformTrust[] memory trustLevels)
+        external
+        onlyOwner
+    {
         require(platforms.length == trustLevels.length, "Array length mismatch");
-        
+
         for (uint256 i = 0; i < platforms.length; i++) {
             setPlatformTrust(platforms[i], trustLevels[i]);
         }
     }
-    
+
     /**
      * @notice Batch update resource criticality levels
      * @param resources Array of resource identifiers
@@ -270,12 +241,12 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
         RiskAssessment.ResourceCriticality[] memory criticalityLevels
     ) external onlyOwner {
         require(resources.length == criticalityLevels.length, "Array length mismatch");
-        
+
         for (uint256 i = 0; i < resources.length; i++) {
             setResourceCriticality(resources[i], criticalityLevels[i]);
         }
     }
-    
+
     /**
      * @notice Initialize additional settings for the consumer
      */
@@ -285,7 +256,7 @@ contract DynamicVerificationConsumer is DynamicThresholdSDK {
         platformTrustLevels["facebook"] = RiskAssessment.PlatformTrust.BASIC;
         platformTrustLevels["instagram"] = RiskAssessment.PlatformTrust.BASIC;
         platformTrustLevels["tiktok"] = RiskAssessment.PlatformTrust.UNTRUSTED;
-        
+
         // Add more resource criticality levels
         resourceCriticalityLevels["username"] = RiskAssessment.ResourceCriticality.TRIVIAL;
         resourceCriticalityLevels["age"] = RiskAssessment.ResourceCriticality.STANDARD;

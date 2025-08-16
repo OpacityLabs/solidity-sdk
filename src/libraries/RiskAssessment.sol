@@ -7,36 +7,39 @@ pragma solidity ^0.8.30;
  */
 library RiskAssessment {
     enum RiskLevel {
-        MINIMAL,    // 10% threshold
-        LOW,        // 30% threshold
-        MEDIUM,     // 50% threshold
-        HIGH,       // 70% threshold
-        CRITICAL    // 90% threshold
+        MINIMAL, // 10% threshold
+        LOW, // 30% threshold
+        MEDIUM, // 50% threshold
+        HIGH, // 70% threshold
+        CRITICAL // 90% threshold
+
     }
-    
+
     enum PlatformTrust {
-        UNTRUSTED,  // New or suspicious platform
-        BASIC,      // Some history, limited trust
-        VERIFIED,   // Verified platform with good history
-        TRUSTED     // Long-term trusted partner
+        UNTRUSTED, // New or suspicious platform
+        BASIC, // Some history, limited trust
+        VERIFIED, // Verified platform with good history
+        TRUSTED // Long-term trusted partner
+
     }
-    
+
     enum ResourceCriticality {
-        TRIVIAL,    // e.g., social media metrics
-        STANDARD,   // e.g., user preferences
-        SENSITIVE,  // e.g., personal data
-        CRITICAL    // e.g., financial data, credentials
+        TRIVIAL, // e.g., social media metrics
+        STANDARD, // e.g., user preferences
+        SENSITIVE, // e.g., personal data
+        CRITICAL // e.g., financial data, credentials
+
     }
-    
+
     struct RiskConfig {
-        uint256 lowValueThreshold;      // Below this = low risk
-        uint256 mediumValueThreshold;   // Below this = medium risk
-        uint256 highValueThreshold;     // Below this = high risk
-        uint8 platformMultiplier;       // 0-200, affects threshold
-        uint8 resourceMultiplier;       // 0-200, affects threshold
-        bool emergencyMode;              // Force maximum threshold
+        uint256 lowValueThreshold; // Below this = low risk
+        uint256 mediumValueThreshold; // Below this = medium risk
+        uint256 highValueThreshold; // Below this = high risk
+        uint8 platformMultiplier; // 0-200, affects threshold
+        uint8 resourceMultiplier; // 0-200, affects threshold
+        bool emergencyMode; // Force maximum threshold
     }
-    
+
     /**
      * @notice Calculate risk score based on multiple factors
      * @param value The transaction value
@@ -63,7 +66,7 @@ library RiskAssessment {
         } else {
             riskScore += 40;
         }
-        
+
         // 2. Platform trust assessment (0-30 points)
         if (platformTrust == PlatformTrust.UNTRUSTED) {
             riskScore += 30;
@@ -73,7 +76,7 @@ library RiskAssessment {
             riskScore += 10;
         }
         // TRUSTED adds 0 points
-        
+
         // 3. Resource criticality assessment (0-30 points)
         if (resourceCriticality == ResourceCriticality.CRITICAL) {
             riskScore += 30;
@@ -83,17 +86,17 @@ library RiskAssessment {
             riskScore += 10;
         }
         // TRIVIAL adds 0 points
-        
+
         // 4. User history bonus (reduces risk)
         if (userVerifications > 100) {
             riskScore = riskScore > 10 ? riskScore - 10 : 0;
         } else if (userVerifications > 50) {
             riskScore = riskScore > 5 ? riskScore - 5 : 0;
         }
-        
+
         return riskScore;
     }
-    
+
     /**
      * @notice Map risk score to risk level
      * @param riskScore The calculated risk score
@@ -112,7 +115,7 @@ library RiskAssessment {
             return RiskLevel.CRITICAL;
         }
     }
-    
+
     /**
      * @notice Get threshold percentage for a risk level
      * @param level The risk level
@@ -126,7 +129,7 @@ library RiskAssessment {
         if (level == RiskLevel.CRITICAL) return 90;
         return 50; // Default to medium
     }
-    
+
     /**
      * @notice Apply multipliers to threshold
      * @param baseThreshold The base threshold
@@ -134,15 +137,15 @@ library RiskAssessment {
      * @param resourceMultiplier Resource risk multiplier (100 = no change)
      * @return adjustedThreshold The adjusted threshold
      */
-    function applyMultipliers(
-        uint8 baseThreshold,
-        uint8 platformMultiplier,
-        uint8 resourceMultiplier
-    ) internal pure returns (uint8) {
+    function applyMultipliers(uint8 baseThreshold, uint8 platformMultiplier, uint8 resourceMultiplier)
+        internal
+        pure
+        returns (uint8)
+    {
         uint256 threshold = baseThreshold;
         threshold = (threshold * platformMultiplier) / 100;
         threshold = (threshold * resourceMultiplier) / 100;
-        
+
         // Ensure threshold is within valid range (5-95%)
         if (threshold > 95) return 95;
         if (threshold < 5) return 5;

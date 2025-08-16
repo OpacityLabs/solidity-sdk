@@ -31,10 +31,10 @@ contract DeployDynamicThreshold is Script {
 
         // Step 1: Deploy BLS Signature Checker (or reuse existing)
         console.log("\n=== Step 1: Deploying BLS Signature Checker ===");
-        
+
         // Check if we should reuse existing BLS checker
         address existingBLS = vm.envOr("EXISTING_BLS_CHECKER", address(0));
-        
+
         if (existingBLS != address(0)) {
             console.log("Using existing BLS Signature Checker at:", existingBLS);
             blsSignatureChecker = BLSSignatureChecker(existingBLS);
@@ -64,50 +64,50 @@ contract DeployDynamicThreshold is Script {
     function configureInitialRiskSettings() internal {
         // Set up additional platform trust levels
         console.log("Setting up platform trust levels...");
-        
+
         string[] memory platforms = new string[](5);
         RiskAssessment.PlatformTrust[] memory trustLevels = new RiskAssessment.PlatformTrust[](5);
-        
+
         platforms[0] = "ethereum";
         trustLevels[0] = RiskAssessment.PlatformTrust.VERIFIED;
-        
+
         platforms[1] = "polygon";
         trustLevels[1] = RiskAssessment.PlatformTrust.VERIFIED;
-        
+
         platforms[2] = "arbitrum";
         trustLevels[2] = RiskAssessment.PlatformTrust.VERIFIED;
-        
+
         platforms[3] = "optimism";
         trustLevels[3] = RiskAssessment.PlatformTrust.VERIFIED;
-        
+
         platforms[4] = "unknown_chain";
         trustLevels[4] = RiskAssessment.PlatformTrust.UNTRUSTED;
-        
+
         dynamicVerificationConsumer.batchUpdatePlatformTrust(platforms, trustLevels);
-        
+
         // Set up additional resource criticality levels
         console.log("Setting up resource criticality levels...");
-        
+
         string[] memory resources = new string[](5);
         RiskAssessment.ResourceCriticality[] memory criticalityLevels = new RiskAssessment.ResourceCriticality[](5);
-        
+
         resources[0] = "transaction";
         criticalityLevels[0] = RiskAssessment.ResourceCriticality.CRITICAL;
-        
+
         resources[1] = "signature";
         criticalityLevels[1] = RiskAssessment.ResourceCriticality.CRITICAL;
-        
+
         resources[2] = "nonce";
         criticalityLevels[2] = RiskAssessment.ResourceCriticality.SENSITIVE;
-        
+
         resources[3] = "metadata";
         criticalityLevels[3] = RiskAssessment.ResourceCriticality.STANDARD;
-        
+
         resources[4] = "timestamp";
         criticalityLevels[4] = RiskAssessment.ResourceCriticality.TRIVIAL;
-        
+
         dynamicVerificationConsumer.batchUpdateResourceCriticality(resources, criticalityLevels);
-        
+
         console.log("Risk settings configured successfully!");
     }
 
@@ -126,7 +126,7 @@ contract DeployDynamicThreshold is Script {
         // Verify the contracts are properly linked
         console.log("\n=== Verification Checks ===");
         console.log("Consumer BLS Address:           ", address(dynamicVerificationConsumer.blsSignatureChecker()));
-        
+
         bool properlyLinked = address(dynamicVerificationConsumer.blsSignatureChecker()) == address(blsSignatureChecker);
         console.log("Consumer properly linked:       ", properlyLinked);
 
