@@ -13,7 +13,6 @@ import "../src/examples/StorageQueryConsumer.sol";
  * @dev Deploys BLS signature checker and both example contracts
  */
 contract DeployOpacityExamples is Script {
-
     // Deployed contract addresses
     BLSSignatureChecker public blsSignatureChecker;
     SimpleVerificationConsumer public simpleVerificationConsumer;
