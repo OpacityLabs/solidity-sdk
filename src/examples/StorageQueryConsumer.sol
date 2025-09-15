@@ -15,17 +15,20 @@ contract StorageQueryConsumer is OpacitySDK {
         string verifiedValue;
         uint256 timestamp;
         bytes32 verificationHash;
+        bool watchtowerVerified;
     }
 
     mapping(address => VerificationResult) public userVerifications;
 
-    event DataVerified(address indexed user, string verifiedValue, bytes32 verificationHash, bool success);
+    event DataVerified(address indexed user, string verifiedValue, bytes32 verificationHash, bool success, bool watchtowerVerified);
 
     /**
      * @notice Constructor for StorageQueryConsumer
      * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
+     * @param _watchtowerAddress Address of the watchtower signer
      */
-    constructor(address _blsSignatureChecker) OpacitySDK(_blsSignatureChecker) {}
+    constructor(address _blsSignatureChecker, address _watchtowerAddress) 
+        OpacitySDK(_blsSignatureChecker, _watchtowerAddress) {}
 
     /**
      * @notice Verify private data using VerificationParams struct
@@ -48,10 +51,11 @@ contract StorageQueryConsumer is OpacitySDK {
                 isVerified: verified,
                 verifiedValue: params.value,
                 timestamp: block.timestamp,
-                verificationHash: verificationHash
+                verificationHash: verificationHash,
+                watchtowerVerified: watchtowerEnabled
             });
 
-            emit DataVerified(params.userAddress, params.value, verificationHash, verified); // derefrence by using the struct params
+            emit DataVerified(params.userAddress, params.value, verificationHash, verified, watchtowerEnabled);
             return (verified, params.value);
         } catch {
             return (false, "");
@@ -75,14 +79,15 @@ contract StorageQueryConsumer is OpacitySDK {
      * @return verifiedValue The verified value
      * @return timestamp When the verification was made
      * @return verificationHash The hash of the verification
+     * @return watchtowerVerified Whether watchtower was involved in verification
      */
     function getUserVerification(address user)
         external
         view
-        returns (bool isValid, string memory verifiedValue, uint256 timestamp, bytes32 verificationHash)
+        returns (bool isValid, string memory verifiedValue, uint256 timestamp, bytes32 verificationHash, bool watchtowerVerified)
     {
         VerificationResult memory result = userVerifications[user];
-        return (result.isVerified, result.verifiedValue, result.timestamp, result.verificationHash);
+        return (result.isVerified, result.verifiedValue, result.timestamp, result.verificationHash, result.watchtowerVerified);
     }
 
     /**
