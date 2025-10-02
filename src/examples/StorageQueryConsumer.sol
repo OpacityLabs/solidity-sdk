@@ -12,14 +12,14 @@ import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 contract StorageQueryConsumer is OpacitySDK {
     struct VerificationResult {
         bool isVerified;
-        string verifiedValue;
+        bytes32 payloadHash;
         uint256 timestamp;
-        bytes32 verificationHash;
     }
 
     mapping(address => VerificationResult) public userVerifications;
+    mapping(address => ValueReveal[]) public userValues;
 
-    event DataVerified(address indexed user, string verifiedValue, bytes32 verificationHash, bool success);
+    event DataVerified(address indexed user, bytes32 payloadHash, bool success);
 
     /**
      * @notice Constructor for StorageQueryConsumer
@@ -28,77 +28,82 @@ contract StorageQueryConsumer is OpacitySDK {
     constructor(address _blsSignatureChecker) OpacitySDK(_blsSignatureChecker) {}
 
     /**
-     * @notice Verify private data using VerificationParams struct
+     * @notice Verify commitment data using VerificationParams struct
      * @dev Primary interface that directly accepts the verification parameters struct
      * @param params The verification parameters wrapped in a struct
      * @return success Whether verification succeeded
-     * @return verifiedValue The verified value if successful
      */
-    function verifyPrivateData(VerificationParams calldata params)
-        external
-        returns (bool success, string memory verifiedValue)
-    {
+    function verifyCommitment(VerificationParams calldata params) external returns (bool success) {
         try this.verify(params) returns (bool verified) {
-            // Verification successful - store the verified value
-            bytes32 verificationHash = keccak256(
-                abi.encodePacked(params.userAddress, params.platform, params.resource, params.value, block.timestamp)
-            );
+            // Verification successful - store the commitment metadata
+            bytes32 payloadHash = computePayloadHash(params.payload);
 
-            userVerifications[params.userAddress] = VerificationResult({
-                isVerified: verified,
-                verifiedValue: params.value,
-                timestamp: block.timestamp,
-                verificationHash: verificationHash
-            });
+            userVerifications[params.payload.userAddr] =
+                VerificationResult({isVerified: verified, payloadHash: payloadHash, timestamp: block.timestamp});
 
-            emit DataVerified(params.userAddress, params.value, verificationHash, verified); // derefrence by using the struct params
-            return (verified, params.value);
+            // Store public value reveals if any
+            delete userValues[params.payload.userAddr];
+            for (uint256 i = 0; i < params.payload.values.length; i++) {
+                userValues[params.payload.userAddr].push(params.payload.values[i]);
+            }
+
+            emit DataVerified(params.payload.userAddr, payloadHash, verified);
+            return verified;
         } catch {
-            return (false, "");
+            return false;
         }
     }
 
     /**
-     * @notice Get the verified value for a user
+     * @notice Get the verified values for a user (public reveals only)
      * @param user The user to check
-     * @return verifiedValue The verified value, empty string if not verified
+     * @return values Array of public value reveals
      */
-    function getVerifiedValue(address user) external view returns (string memory verifiedValue) {
-        VerificationResult memory result = userVerifications[user];
-        return result.isVerified ? result.verifiedValue : "";
+    function getUserValues(address user) external view returns (ValueReveal[] memory values) {
+        return userValues[user];
     }
 
     /**
      * @notice Check if a user has valid verification
      * @param user The user to check
      * @return isValid Whether the user has valid verification
-     * @return verifiedValue The verified value
+     * @return payloadHash The hash of the commitment payload
      * @return timestamp When the verification was made
-     * @return verificationHash The hash of the verification
      */
     function getUserVerification(address user)
         external
         view
-        returns (bool isValid, string memory verifiedValue, uint256 timestamp, bytes32 verificationHash)
+        returns (bool isValid, bytes32 payloadHash, uint256 timestamp)
     {
         VerificationResult memory result = userVerifications[user];
-        return (result.isVerified, result.verifiedValue, result.timestamp, result.verificationHash);
+        return (result.isVerified, result.payloadHash, result.timestamp);
     }
 
     /**
-     * @notice Check if a verification is still valid (not expired) and get the value
+     * @notice Check if a verification is still valid (not expired)
      * @param user The user to check
      * @param maxAge Maximum age of verification in seconds
      * @return isValid Whether the verification is still valid
-     * @return verifiedValue The verified value if still valid
+     * @return payloadHash The hash of the commitment payload if still valid
      */
-    function getValidVerificationValue(address user, uint256 maxAge)
+    function isVerificationValid(address user, uint256 maxAge)
         external
         view
-        returns (bool isValid, string memory verifiedValue)
+        returns (bool isValid, bytes32 payloadHash)
     {
         VerificationResult memory result = userVerifications[user];
         bool stillValid = result.isVerified && (block.timestamp - result.timestamp) <= maxAge;
-        return (stillValid, stillValid ? result.verifiedValue : "");
+        return (stillValid, stillValid ? result.payloadHash : bytes32(0));
+    }
+
+    /**
+     * @notice Get a specific value reveal for a user by index
+     * @param user The user to check
+     * @param index The index of the value reveal
+     * @return value The value reveal at the specified index
+     */
+    function getUserValueByIndex(address user, uint256 index) external view returns (ValueReveal memory value) {
+        require(index < userValues[user].length, "Index out of bounds");
+        return userValues[user][index];
     }
 }
