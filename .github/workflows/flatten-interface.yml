@@ -35,20 +35,37 @@ jobs:
           path: flattened/IOpacitySDK.flat.sol
           retention-days: 90
 
-      - name: Check for interface changes
+      - name: Check for changes and commit
         id: changes
         run: |
           if [ -f "flattened/IOpacitySDK.flat.sol" ]; then
             echo "Interface flattened successfully"
-            echo "changed=true" >> $GITHUB_OUTPUT
 
             # Display a summary of the flattened interface
             echo "## Flattened Interface Summary" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             wc -l flattened/IOpacitySDK.flat.sol >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+            # Check if there are changes to commit
+            if git diff --quiet flattened/IOpacitySDK.flat.sol 2>/dev/null && git ls-files --error-unmatch flattened/IOpacitySDK.flat.sol >/dev/null 2>&1; then
+              echo "No changes to flattened interface"
+              echo "changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected in flattened interface"
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
           else
             echo "Failed to flatten interface"
             exit 1
           fi
+
+      - name: Commit flattened interface
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add flattened/IOpacitySDK.flat.sol
+          git commit -m "chore: update flattened IOpacitySDK interface"
+          git push
 
