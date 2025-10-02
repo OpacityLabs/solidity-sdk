@@ -22,8 +22,11 @@ PRIVATE_KEY=your_private_key_here
 ### 3. Deploy on Holesky Testnet
 
 ```bash
-# Deploy all contracts (BLS signature checker + examples)
-forge script script/DeployOpacityExamples.s.sol:DeployOpacityExamples --rpc-url holesky --broadcast
+# Deploy all contracts with default Holesky registry coordinator (0x3e43AA225b5cB026C5E8a53f62572b10D526a50B)
+forge script script/Deploy.s.sol:Deploy --sig "deployExamplesDefault()" --rpc-url holesky --broadcast
+
+# Or deploy with a custom registry coordinator address
+forge script script/DeployOpacityExamples.s.sol:DeployOpacityExamples --sig "run(address)" <REGISTRY_COORDINATOR_ADDRESS> --rpc-url holesky --broadcast
 ```
 
 This command will:
@@ -139,8 +142,34 @@ forge snapshot
 - **Foundry**: Development and testing framework
 - **OpenZeppelin**: Standard library contracts (via EigenLayer)
 
-## Important 
-Make sure not to change the registry coordinator address in the deployment scripts
+## Deployment Configuration
+
+### Registry Coordinator
+
+The deployment scripts now support configurable registry coordinator addresses:
+
+- **Default Holesky Address**: `0x3e43AA225b5cB026C5E8a53f62572b10D526a50B`
+- **Custom Deployment**: Pass any registry coordinator address as a parameter
+
+#### Using the Helper Script (Deploy.s.sol)
+
+```bash
+# Deploy with default Holesky registry coordinator
+forge script script/Deploy.s.sol:Deploy --sig "deployExamplesDefault()" --rpc-url <RPC_URL> --broadcast
+
+# Deploy with custom registry coordinator
+forge script script/Deploy.s.sol:Deploy --sig "deployExamplesCustom(address)" <REGISTRY_COORDINATOR> --rpc-url <RPC_URL> --broadcast
+```
+
+#### Direct Deployment Scripts
+
+```bash
+# Deploy BLS Signature Checker only
+forge script script/DeployBLSSignatureChecker.s.sol:DeployBLSSignatureChecker --sig "run(address)" <REGISTRY_COORDINATOR> --rpc-url <RPC_URL> --broadcast
+
+# Deploy all examples
+forge script script/DeployOpacityExamples.s.sol:DeployOpacityExamples --sig "run(address)" <REGISTRY_COORDINATOR> --rpc-url <RPC_URL> --broadcast
+```
 ---
 
 ## Foundry Documentation
