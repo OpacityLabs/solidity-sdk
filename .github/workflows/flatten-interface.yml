@@ -1,0 +1,54 @@
+name: Flatten and Track Interface
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/IOpacitySDK.sol'
+  workflow_dispatch:
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  flatten-interface:
+    name: Flatten IOpacitySDK Interface
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Flatten IOpacitySDK
+        run: |
+          forge flatten src/IOpacitySDK.sol -o flattened/IOpacitySDK.flat.sol
+        id: flatten
+
+      - name: Upload flattened interface
+        uses: actions/upload-artifact@v4
+        with:
+          name: flattened-interface
+          path: flattened/IOpacitySDK.flat.sol
+          retention-days: 90
+
+      - name: Check for interface changes
+        id: changes
+        run: |
+          if [ -f "flattened/IOpacitySDK.flat.sol" ]; then
+            echo "Interface flattened successfully"
+            echo "changed=true" >> $GITHUB_OUTPUT
+
+            # Display a summary of the flattened interface
+            echo "## Flattened Interface Summary" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            wc -l flattened/IOpacitySDK.flat.sol >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Failed to flatten interface"
+            exit 1
+          fi
+
