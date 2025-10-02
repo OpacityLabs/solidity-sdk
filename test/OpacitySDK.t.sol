@@ -321,4 +321,46 @@ contract OpacitySDKTest is Test {
 
         assertNotEq(hash1, hash2, "Different users should produce different payload hashes");
     }
+
+    function testHardcodedPayloadHashWithValueReveals() public {
+        // This test uses a fixed example with hardcoded expected hash
+        // to ensure the payload hash computation remains consistent
+
+        // Create a specific user address
+        address specificUser = address(0x742D35cC6634c0532925a3B844BC9E7595F0beBB);
+
+        // Create specific resources with known values
+        OpacitySDK.Resource memory resource1 =
+            OpacitySDK.Resource({platformUrl: "https://api.bank.com", resourceName: "balance", param: "account123"});
+
+        OpacitySDK.Resource memory resource2 =
+            OpacitySDK.Resource({platformUrl: "https://api.bank.com", resourceName: "balance", param: "account456"});
+
+        // Create value reveals
+        OpacitySDK.ValueReveal[] memory values = new OpacitySDK.ValueReveal[](2);
+        values[0] = OpacitySDK.ValueReveal({resource: resource1, value: "1000.50"});
+        values[1] = OpacitySDK.ValueReveal({resource: resource2, value: "2500.75"});
+
+        // No compositions or conditions
+        OpacitySDK.Composition[] memory compositions = new OpacitySDK.Composition[](0);
+        OpacitySDK.ConditionGroup[] memory conditions = new OpacitySDK.ConditionGroup[](0);
+
+        // Create the commitment payload
+        OpacitySDK.CommitmentPayload memory payload = OpacitySDK.CommitmentPayload({
+            userAddr: specificUser,
+            values: values,
+            compositions: compositions,
+            conditions: conditions,
+            sig: hex""
+        });
+
+        // Compute the hash
+        bytes32 computedHash = simpleConsumer.computePayloadHash(payload);
+
+        // Expected hash computed off-chain (keccak256(abi.encode(userAddr, values, compositions, conditions)))
+        // This hash should remain constant for this exact payload
+        bytes32 expectedHash = 0xa3f9c50a7b411f721324549daa11a23f82fc9defd756075a3f76edbbf667aef2;
+
+        assertEq(computedHash, expectedHash, "Payload hash should match the expected hardcoded value");
+    }
 }
