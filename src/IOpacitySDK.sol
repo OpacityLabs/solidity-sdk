@@ -90,10 +90,16 @@ interface IOpacitySDK {
         CommitmentPayload payload;
     }
 
-    // Custom errors
+    /// @notice Thrown when the BLS signature verification fails
     error InvalidSignature();
+
+    /// @notice Thrown when the quorum threshold is not met (signatories own less than required percentage)
     error InsufficientQuorumThreshold();
+
+    /// @notice Thrown when the reference block number is too old (beyond BLOCK_STALE_MEASURE)
     error StaleBlockNumber();
+
+    /// @notice Thrown when the reference block number is in the future
     error FutureBlockNumber();
 
     /**
