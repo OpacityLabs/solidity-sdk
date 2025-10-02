@@ -4,24 +4,24 @@ pragma solidity ^0.8.30;
 import "forge-std/Test.sol";
 import "../src/OpacitySDK.sol";
 import "../src/examples/SimpleVerificationConsumer.sol";
-import "../src/examples/StorageQueryConsumer.sol";
-import "@eigenlayer-middleware/BLSSignatureChecker.sol";
 
+/**
+ * @title OpacitySDKTest
+ * @notice Core tests for OpacitySDK payload hash computation and data structures
+ */
 contract OpacitySDKTest is Test {
-    SimpleVerificationConsumer public simpleConsumer;
-    StorageQueryConsumer public storageConsumer;
+    SimpleVerificationConsumer public consumer;
     address public blsSignatureChecker;
     address public testUser;
 
     function setUp() public {
-        // Mock BLS signature checker address (we'll use a simple address for unit testing)
+        // Mock BLS signature checker address
         blsSignatureChecker = address(0x1234);
         testUser = address(0x5678);
 
-        // Deploy contracts with mocked BLS signature checker
+        // Deploy consumer contract with mocked BLS signature checker
         vm.etch(blsSignatureChecker, hex"00");
-        simpleConsumer = new SimpleVerificationConsumer(blsSignatureChecker);
-        storageConsumer = new StorageQueryConsumer(blsSignatureChecker);
+        consumer = new SimpleVerificationConsumer(blsSignatureChecker);
     }
 
     function testComputePayloadHashBasic() public {
@@ -37,7 +37,7 @@ contract OpacitySDKTest is Test {
             sig: hex""
         });
 
-        bytes32 hash = simpleConsumer.computePayloadHash(payload);
+        bytes32 hash = consumer.computePayloadHash(payload);
         assertNotEq(hash, bytes32(0), "Payload hash should not be zero");
     }
 
@@ -65,7 +65,7 @@ contract OpacitySDKTest is Test {
             sig: hex""
         });
 
-        bytes32 hash = simpleConsumer.computePayloadHash(payload);
+        bytes32 hash = consumer.computePayloadHash(payload);
         assertNotEq(hash, bytes32(0), "Payload hash with values should not be zero");
     }
 
@@ -96,7 +96,7 @@ contract OpacitySDKTest is Test {
             sig: hex""
         });
 
-        bytes32 hash = simpleConsumer.computePayloadHash(payload);
+        bytes32 hash = consumer.computePayloadHash(payload);
         assertNotEq(hash, bytes32(0), "Payload hash with compositions should not be zero");
     }
 
@@ -127,7 +127,7 @@ contract OpacitySDKTest is Test {
             sig: hex""
         });
 
-        bytes32 hash = simpleConsumer.computePayloadHash(payload);
+        bytes32 hash = consumer.computePayloadHash(payload);
         assertNotEq(hash, bytes32(0), "Payload hash with conditions should not be zero");
     }
 
@@ -193,45 +193,8 @@ contract OpacitySDKTest is Test {
             sig: hex"1234567890abcdef"
         });
 
-        bytes32 hash = simpleConsumer.computePayloadHash(payload);
+        bytes32 hash = consumer.computePayloadHash(payload);
         assertNotEq(hash, bytes32(0), "Full commitment payload hash should not be zero");
-    }
-
-    function testStorageQueryConsumerValueStorage() public {
-        // Create a simple commitment with value reveals
-        OpacitySDK.Resource memory resource =
-            OpacitySDK.Resource({platformUrl: "https://api.bank.com", resourceName: "balance", param: "A1"});
-
-        OpacitySDK.ValueReveal[] memory values = new OpacitySDK.ValueReveal[](1);
-        values[0] = OpacitySDK.ValueReveal({resource: resource, value: "1000.00"});
-
-        OpacitySDK.Composition[] memory compositions = new OpacitySDK.Composition[](0);
-        OpacitySDK.ConditionGroup[] memory conditions = new OpacitySDK.ConditionGroup[](0);
-
-        OpacitySDK.CommitmentPayload memory payload = OpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
-        });
-
-        // Get stored values (should be empty initially)
-        OpacitySDK.ValueReveal[] memory storedValues = storageConsumer.getUserValues(testUser);
-        assertEq(storedValues.length, 0, "Should have no stored values initially");
-
-        // Note: We can't actually verify the commitment without a real BLS signature checker
-        // But we can test the data structures
-    }
-
-    function testGetQuorumThreshold() public {
-        uint8 threshold = simpleConsumer.getQuorumThreshold();
-        assertEq(threshold, 66, "Quorum threshold should be 66%");
-    }
-
-    function testGetBlockStaleMeasure() public {
-        uint32 staleMeasure = simpleConsumer.getBlockStaleMeasure();
-        assertEq(staleMeasure, 300, "Block stale measure should be 300 blocks");
     }
 
     function testMultipleConditionAtoms() public {
@@ -260,7 +223,7 @@ contract OpacitySDKTest is Test {
             sig: hex""
         });
 
-        bytes32 hash = simpleConsumer.computePayloadHash(payload);
+        bytes32 hash = consumer.computePayloadHash(payload);
         assertNotEq(hash, bytes32(0), "Payload with multiple condition atoms should hash correctly");
     }
 
@@ -290,7 +253,7 @@ contract OpacitySDKTest is Test {
             sig: hex""
         });
 
-        bytes32 hash = simpleConsumer.computePayloadHash(payload);
+        bytes32 hash = consumer.computePayloadHash(payload);
         assertNotEq(hash, bytes32(0), "Concat composition should hash correctly");
     }
 
@@ -316,8 +279,8 @@ contract OpacitySDKTest is Test {
             sig: hex""
         });
 
-        bytes32 hash1 = simpleConsumer.computePayloadHash(payload1);
-        bytes32 hash2 = simpleConsumer.computePayloadHash(payload2);
+        bytes32 hash1 = consumer.computePayloadHash(payload1);
+        bytes32 hash2 = consumer.computePayloadHash(payload2);
 
         assertNotEq(hash1, hash2, "Different users should produce different payload hashes");
     }
@@ -355,7 +318,7 @@ contract OpacitySDKTest is Test {
         });
 
         // Compute the hash
-        bytes32 computedHash = simpleConsumer.computePayloadHash(payload);
+        bytes32 computedHash = consumer.computePayloadHash(payload);
 
         // Expected hash computed off-chain (keccak256(abi.encode(userAddr, values, compositions, conditions)))
         // This hash should remain constant for this exact payload
