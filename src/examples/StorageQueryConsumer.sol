@@ -14,22 +14,12 @@ contract StorageQueryConsumer is OpacitySDK {
         bool isVerified;
         bytes32 payloadHash;
         uint256 timestamp;
-        uint256 valueCount;
-        uint256 compositionCount;
-        uint256 conditionCount;
     }
 
     mapping(address => VerificationResult) public userVerifications;
     mapping(address => ValueReveal[]) public userValues;
 
-    event DataVerified(
-        address indexed user,
-        bytes32 payloadHash,
-        uint256 valueCount,
-        uint256 compositionCount,
-        uint256 conditionCount,
-        bool success
-    );
+    event DataVerified(address indexed user, bytes32 payloadHash, bool success);
 
     /**
      * @notice Constructor for StorageQueryConsumer
@@ -48,14 +38,8 @@ contract StorageQueryConsumer is OpacitySDK {
             // Verification successful - store the commitment metadata
             bytes32 payloadHash = computePayloadHash(params.payload);
 
-            userVerifications[params.payload.userAddr] = VerificationResult({
-                isVerified: verified,
-                payloadHash: payloadHash,
-                timestamp: block.timestamp,
-                valueCount: params.payload.values.length,
-                compositionCount: params.payload.compositions.length,
-                conditionCount: params.payload.conditions.length
-            });
+            userVerifications[params.payload.userAddr] =
+                VerificationResult({isVerified: verified, payloadHash: payloadHash, timestamp: block.timestamp});
 
             // Store public value reveals if any
             delete userValues[params.payload.userAddr];
@@ -63,14 +47,7 @@ contract StorageQueryConsumer is OpacitySDK {
                 userValues[params.payload.userAddr].push(params.payload.values[i]);
             }
 
-            emit DataVerified(
-                params.payload.userAddr,
-                payloadHash,
-                params.payload.values.length,
-                params.payload.compositions.length,
-                params.payload.conditions.length,
-                verified
-            );
+            emit DataVerified(params.payload.userAddr, payloadHash, verified);
             return verified;
         } catch {
             return false;
@@ -92,31 +69,14 @@ contract StorageQueryConsumer is OpacitySDK {
      * @return isValid Whether the user has valid verification
      * @return payloadHash The hash of the commitment payload
      * @return timestamp When the verification was made
-     * @return valueCount Number of public value reveals
-     * @return compositionCount Number of compositions
-     * @return conditionCount Number of condition groups
      */
     function getUserVerification(address user)
         external
         view
-        returns (
-            bool isValid,
-            bytes32 payloadHash,
-            uint256 timestamp,
-            uint256 valueCount,
-            uint256 compositionCount,
-            uint256 conditionCount
-        )
+        returns (bool isValid, bytes32 payloadHash, uint256 timestamp)
     {
         VerificationResult memory result = userVerifications[user];
-        return (
-            result.isVerified,
-            result.payloadHash,
-            result.timestamp,
-            result.valueCount,
-            result.compositionCount,
-            result.conditionCount
-        );
+        return (result.isVerified, result.payloadHash, result.timestamp);
     }
 
     /**
