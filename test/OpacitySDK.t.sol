@@ -24,24 +24,6 @@ contract OpacitySDKTest is Test {
         storageConsumer = new StorageQueryConsumer(blsSignatureChecker);
     }
 
-    function testComputeRID() public {
-        OpacitySDK.Resource memory resource =
-            OpacitySDK.Resource({platformUrl: "https://api.bank.com", resourceName: "balance", param: "A1"});
-
-        bytes32 rid = simpleConsumer.computeRID(resource);
-        assertNotEq(rid, bytes32(0), "RID should not be zero");
-
-        // Test that same resource produces same RID
-        bytes32 rid2 = simpleConsumer.computeRID(resource);
-        assertEq(rid, rid2, "Same resource should produce same RID");
-
-        // Test that different resource produces different RID
-        OpacitySDK.Resource memory differentResource =
-            OpacitySDK.Resource({platformUrl: "https://api.bank.com", resourceName: "balance", param: "A2"});
-        bytes32 differentRid = simpleConsumer.computeRID(differentResource);
-        assertNotEq(rid, differentRid, "Different resources should produce different RIDs");
-    }
-
     function testComputePayloadHashBasic() public {
         OpacitySDK.ValueReveal[] memory values = new OpacitySDK.ValueReveal[](0);
         OpacitySDK.Composition[] memory compositions = new OpacitySDK.Composition[](0);

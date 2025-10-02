@@ -118,15 +118,6 @@ abstract contract OpacitySDK {
     }
 
     /**
-     * @notice Compute the Resource ID (RID) as UID(platformUrl, resourceName, param)
-     * @param resource The resource to compute the RID for
-     * @return The RID as a bytes32 hash
-     */
-    function computeRID(Resource memory resource) public pure returns (bytes32) {
-        return keccak256(abi.encode(resource.platformUrl, resource.resourceName, resource.param));
-    }
-
-    /**
      * @notice Compute the payload hash for signature verification
      * @dev Implements UID(ProtoTag, UserAddr, P) where P is the commitment payload
      * @param payload The commitment payload
