@@ -2,98 +2,15 @@
 pragma solidity ^0.8.30;
 
 import "@eigenlayer-middleware/BLSSignatureChecker.sol";
-import {
-    IBLSSignatureChecker, IBLSSignatureCheckerTypes
-} from "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
+import {IBLSSignatureCheckerTypes} from "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
+import {IOpacitySDK} from "./IOpacitySDK.sol";
 
 /**
  * @title OpacitySDK
  * @notice Lightweight SDK for implementing opacity verification
  * @dev Inherit from this contract to add opacity verification capabilities to your contract
  */
-abstract contract OpacitySDK {
-    /**
-     * @notice Resource tuple (PU, r, PA) representing a resource from a platform
-     * @param platformUrl Platform URL (e.g., "https://api.bank.com")
-     * @param resourceName Resource name (e.g., "balance")
-     * @param param Resource-specific parameter (e.g., "A1")
-     */
-    struct Resource {
-        string platformUrl;
-        string resourceName;
-        string param;
-    }
-
-    /**
-     * @notice Public reveal pair (Resource, value)
-     * @param resource The resource being revealed
-     * @param value The primitive value (string, number as string, bool as string, or bytes)
-     */
-    struct ValueReveal {
-        Resource resource;
-        string value;
-    }
-
-    /**
-     * @notice Composition operation
-     * @param op Operation type: "sum" or "concat"
-     * @param resources Array of resources to apply the operation to
-     */
-    struct Composition {
-        string op;
-        Resource[] resources;
-    }
-
-    /**
-     * @notice Conditional atom for conditions
-     * @param atomType Type of condition: "substr" or "gt"
-     * @param value The value for the condition (needle for substr, threshold for gt)
-     */
-    struct CondAtom {
-        string atomType;
-        string value;
-    }
-
-    /**
-     * @notice Condition group
-     * @param targets Array of resources that must satisfy all conditions
-     * @param allOf Array of conditional atoms that all targets must satisfy
-     */
-    struct ConditionGroup {
-        Resource[] targets;
-        CondAtom[] allOf;
-    }
-
-    /**
-     * @notice Unified Commitment Payload (P) as defined in the schema
-     * @param userAddr Signer's address
-     * @param values Optional public reveals as (R, v) pairs
-     * @param compositions Optional list of composition items
-     * @param conditions Optional list of condition groups
-     * @param sig Signature over UID(ProtoTag, UserAddr, P)
-     */
-    struct CommitmentPayload {
-        address userAddr;
-        ValueReveal[] values;
-        Composition[] compositions;
-        ConditionGroup[] conditions;
-        bytes sig;
-    }
-
-    /**
-     * @notice Struct containing all parameters needed for verification
-     * @param quorumNumbers The quorum numbers to check signatures for
-     * @param referenceBlockNumber The block number to use as reference for operator set
-     * @param nonSignerStakesAndSignature The non-signer stakes and signature data computed off-chain
-     * @param payload The unified commitment payload
-     */
-    struct VerificationParams {
-        bytes quorumNumbers;
-        uint32 referenceBlockNumber;
-        IBLSSignatureCheckerTypes.NonSignerStakesAndSignature nonSignerStakesAndSignature;
-        CommitmentPayload payload;
-    }
-
+abstract contract OpacitySDK is IOpacitySDK {
     // The BLS signature checker contract
     BLSSignatureChecker public immutable blsSignatureChecker;
 
@@ -101,12 +18,6 @@ abstract contract OpacitySDK {
     uint8 public constant THRESHOLD_DENOMINATOR = 100;
     uint8 public QUORUM_THRESHOLD = 66;
     uint32 public BLOCK_STALE_MEASURE = 300;
-
-    // Custom errors
-    error InvalidSignature();
-    error InsufficientQuorumThreshold();
-    error StaleBlockNumber();
-    error FutureBlockNumber();
 
     /**
      * @notice Constructor for OpacitySDK

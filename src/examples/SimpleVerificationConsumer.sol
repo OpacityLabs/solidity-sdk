@@ -2,6 +2,7 @@
 pragma solidity ^0.8.30;
 
 import "../OpacitySDK.sol";
+import "../IOpacitySDK.sol";
 import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 contract SimpleVerificationConsumer is OpacitySDK {
@@ -18,7 +19,7 @@ contract SimpleVerificationConsumer is OpacitySDK {
      * @dev Primary interface - cleaner way to use the OpacitySDK
      * @param params The VerificationParams struct containing all verification parameters
      */
-    function verifyUserData(VerificationParams calldata params) public returns (bool) {
+    function verifyUserData(IOpacitySDK.VerificationParams calldata params) public returns (bool) {
         try this.verify(params) returns (bool verified) {
             // Verification successful - emit event
             emit DataVerified(params.payload.userAddr, verified);
