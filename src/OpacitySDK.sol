@@ -133,14 +133,15 @@ abstract contract OpacitySDK {
      * @return The payload hash
      */
     function computePayloadHash(CommitmentPayload memory payload) public pure returns (bytes32) {
-        // Protocol tag for versioning
-        bytes32 protoTag = keccak256("OPACITY-v1");
+        // Protocol tag for versioning (commented out for now)
+        // bytes32 protoTag = keccak256("OPACITY-v1");
 
         // Hash the entire payload structure
         bytes32 payloadHash =
             keccak256(abi.encode(payload.userAddr, payload.values, payload.compositions, payload.conditions));
 
-        return keccak256(abi.encode(protoTag, payload.userAddr, payloadHash));
+        // return keccak256(abi.encode(protoTag, payload.userAddr, payloadHash));
+        return payloadHash;
     }
 
     /**

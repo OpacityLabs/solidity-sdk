@@ -5,9 +5,7 @@ import "../OpacitySDK.sol";
 import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 contract SimpleVerificationConsumer is OpacitySDK {
-    event DataVerified(
-        address indexed user, uint256 valueCount, uint256 compositionCount, uint256 conditionCount, bool isValid
-    );
+    event DataVerified(address indexed user, bool isValid);
 
     /**
      * @notice Constructor for SimpleVerificationConsumer
@@ -22,14 +20,8 @@ contract SimpleVerificationConsumer is OpacitySDK {
      */
     function verifyUserData(VerificationParams calldata params) public returns (bool) {
         try this.verify(params) returns (bool verified) {
-            // Verification successful - emit event with payload summary
-            emit DataVerified(
-                params.payload.userAddr,
-                params.payload.values.length,
-                params.payload.compositions.length,
-                params.payload.conditions.length,
-                verified
-            );
+            // Verification successful - emit event
+            emit DataVerified(params.payload.userAddr, verified);
             return verified;
         } catch {
             return false;
