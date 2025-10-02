@@ -2,6 +2,7 @@
 pragma solidity ^0.8.30;
 
 import "../OpacitySDK.sol";
+import "../IOpacitySDK.sol";
 import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 /**
@@ -17,7 +18,7 @@ contract StorageQueryConsumer is OpacitySDK {
     }
 
     mapping(address => VerificationResult) public userVerifications;
-    mapping(address => ValueReveal[]) public userValues;
+    mapping(address => IOpacitySDK.ValueReveal[]) public userValues;
 
     event DataVerified(address indexed user, bytes32 payloadHash, bool success);
 
@@ -33,7 +34,7 @@ contract StorageQueryConsumer is OpacitySDK {
      * @param params The verification parameters wrapped in a struct
      * @return success Whether verification succeeded
      */
-    function verifyCommitment(VerificationParams calldata params) external returns (bool success) {
+    function verifyCommitment(IOpacitySDK.VerificationParams calldata params) external returns (bool success) {
         try this.verify(params) returns (bool verified) {
             // Verification successful - store the commitment metadata
             bytes32 payloadHash = computePayloadHash(params.payload);
@@ -59,7 +60,7 @@ contract StorageQueryConsumer is OpacitySDK {
      * @param user The user to check
      * @return values Array of public value reveals
      */
-    function getUserValues(address user) external view returns (ValueReveal[] memory values) {
+    function getUserValues(address user) external view returns (IOpacitySDK.ValueReveal[] memory values) {
         return userValues[user];
     }
 
@@ -102,7 +103,7 @@ contract StorageQueryConsumer is OpacitySDK {
      * @param index The index of the value reveal
      * @return value The value reveal at the specified index
      */
-    function getUserValueByIndex(address user, uint256 index) external view returns (ValueReveal memory value) {
+    function getUserValueByIndex(address user, uint256 index) external view returns (IOpacitySDK.ValueReveal memory value) {
         require(index < userValues[user].length, "Index out of bounds");
         return userValues[user][index];
     }

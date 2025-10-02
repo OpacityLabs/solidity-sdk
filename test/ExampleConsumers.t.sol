@@ -3,6 +3,7 @@ pragma solidity ^0.8.30;
 
 import "forge-std/Test.sol";
 import "../src/OpacitySDK.sol";
+import "../src/IOpacitySDK.sol";
 import "../src/examples/SimpleVerificationConsumer.sol";
 import "../src/examples/StorageQueryConsumer.sol";
 
@@ -49,16 +50,16 @@ contract ExampleConsumersTest is Test {
 
     function testStorageQueryConsumerValueStorage() public {
         // Create a simple commitment with value reveals
-        OpacitySDK.Resource memory resource =
-            OpacitySDK.Resource({platformUrl: "https://api.bank.com", resourceName: "balance", param: "A1"});
+        IOpacitySDK.Resource memory resource =
+            IOpacitySDK.Resource({platformUrl: "https://api.bank.com", resourceName: "balance", param: "A1"});
 
-        OpacitySDK.ValueReveal[] memory values = new OpacitySDK.ValueReveal[](1);
-        values[0] = OpacitySDK.ValueReveal({resource: resource, value: "1000.00"});
+        IOpacitySDK.ValueReveal[] memory values = new IOpacitySDK.ValueReveal[](1);
+        values[0] = IOpacitySDK.ValueReveal({resource: resource, value: "1000.00"});
 
-        OpacitySDK.Composition[] memory compositions = new OpacitySDK.Composition[](0);
-        OpacitySDK.ConditionGroup[] memory conditions = new OpacitySDK.ConditionGroup[](0);
+        IOpacitySDK.Composition[] memory compositions = new IOpacitySDK.Composition[](0);
+        IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
-        OpacitySDK.CommitmentPayload memory payload = OpacitySDK.CommitmentPayload({
+        IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
             userAddr: testUser,
             values: values,
             compositions: compositions,
@@ -67,7 +68,7 @@ contract ExampleConsumersTest is Test {
         });
 
         // Get stored values (should be empty initially)
-        OpacitySDK.ValueReveal[] memory storedValues = storageConsumer.getUserValues(testUser);
+        IOpacitySDK.ValueReveal[] memory storedValues = storageConsumer.getUserValues(testUser);
         assertEq(storedValues.length, 0, "Should have no stored values initially");
 
         // Note: We can't actually verify the commitment without a real BLS signature checker
@@ -76,16 +77,16 @@ contract ExampleConsumersTest is Test {
 
     function testStorageConsumerPayloadHashing() public {
         // Test that the storage consumer can compute payload hashes correctly
-        OpacitySDK.Resource memory resource =
-            OpacitySDK.Resource({platformUrl: "https://api.example.com", resourceName: "data", param: "user1"});
+        IOpacitySDK.Resource memory resource =
+            IOpacitySDK.Resource({platformUrl: "https://api.example.com", resourceName: "data", param: "user1"});
 
-        OpacitySDK.ValueReveal[] memory values = new OpacitySDK.ValueReveal[](1);
-        values[0] = OpacitySDK.ValueReveal({resource: resource, value: "test_value"});
+        IOpacitySDK.ValueReveal[] memory values = new IOpacitySDK.ValueReveal[](1);
+        values[0] = IOpacitySDK.ValueReveal({resource: resource, value: "test_value"});
 
-        OpacitySDK.Composition[] memory compositions = new OpacitySDK.Composition[](0);
-        OpacitySDK.ConditionGroup[] memory conditions = new OpacitySDK.ConditionGroup[](0);
+        IOpacitySDK.Composition[] memory compositions = new IOpacitySDK.Composition[](0);
+        IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
-        OpacitySDK.CommitmentPayload memory payload = OpacitySDK.CommitmentPayload({
+        IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
             userAddr: testUser,
             values: values,
             compositions: compositions,
