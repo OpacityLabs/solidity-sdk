@@ -103,7 +103,11 @@ contract StorageQueryConsumer is OpacitySDK {
      * @param index The index of the value reveal
      * @return value The value reveal at the specified index
      */
-    function getUserValueByIndex(address user, uint256 index) external view returns (IOpacitySDK.ValueReveal memory value) {
+    function getUserValueByIndex(address user, uint256 index)
+        external
+        view
+        returns (IOpacitySDK.ValueReveal memory value)
+    {
         require(index < userValues[user].length, "Index out of bounds");
         return userValues[user][index];
     }
