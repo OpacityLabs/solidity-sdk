@@ -6,11 +6,7 @@ import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 contract SimpleVerificationConsumer is OpacitySDK {
     event DataVerified(
-        address indexed user,
-        uint256 valueCount,
-        uint256 compositionCount,
-        uint256 conditionCount,
-        bool isValid
+        address indexed user, uint256 valueCount, uint256 compositionCount, uint256 conditionCount, bool isValid
     );
 
     /**
