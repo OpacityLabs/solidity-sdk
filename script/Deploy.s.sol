@@ -5,13 +5,12 @@ import "forge-std/Script.sol";
 import "@eigenlayer-middleware/BLSSignatureChecker.sol";
 import "@eigenlayer-middleware/interfaces/IRegistryCoordinator.sol";
 import "../src/examples/SimpleVerificationConsumer.sol";
-import "./DeployOpacityExamples.s.sol";
-import "./DeployBLSSignatureChecker.s.sol";
+import "../src/examples/StorageQueryConsumer.sol";
 
 /**
  * @title Deploy
- * @notice Helper contract for deployment with configurable or default registry coordinator
- * @dev Provides convenience functions with default Holesky testnet address
+ * @notice Main deployment script for OpacitySDK contracts
+ * @dev Supports deploying with existing or new BLS signature checker
  */
 contract Deploy is Script {
     // Default Registry Coordinator address (testnet holesky)
@@ -20,6 +19,7 @@ contract Deploy is Script {
     // Deployed contracts
     BLSSignatureChecker public blsSignatureChecker;
     SimpleVerificationConsumer public simpleVerificationConsumer;
+    StorageQueryConsumer public storageQueryConsumer;
 
     /**
      * @notice Get registry coordinator address from env or use default
@@ -34,13 +34,13 @@ contract Deploy is Script {
     }
 
     /**
-     * @notice Deploy BLS + SimpleVerificationConsumer only (default deployment)
+     * @notice Default deployment - deploys BLS + SimpleVerificationConsumer
      */
     function run() external {
         address registryCoordinator = getRegistryCoordinator();
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        console.log("Starting default OpacitySDK deployment...");
+        console.log("Starting OpacitySDK deployment...");
         console.log("Deployer address:", vm.addr(deployerPrivateKey));
         console.log("Registry Coordinator:", registryCoordinator);
 
@@ -58,7 +58,105 @@ contract Deploy is Script {
 
         vm.stopBroadcast();
 
+        writeDeploymentJson(registryCoordinator, address(0));
         printDeploymentSummary(registryCoordinator);
+    }
+
+    /**
+     * @notice Deploy with existing BLS signature checker
+     * @param blsSignatureCheckerAddress Existing BLS signature checker address
+     */
+    function runWithBLS(address blsSignatureCheckerAddress) external {
+        require(blsSignatureCheckerAddress != address(0), "Invalid BLS address");
+
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        blsSignatureChecker = BLSSignatureChecker(blsSignatureCheckerAddress);
+
+        console.log("Starting OpacitySDK deployment with existing BLS...");
+        console.log("Deployer address:", vm.addr(deployerPrivateKey));
+        console.log("Using BLS Signature Checker:", blsSignatureCheckerAddress);
+
+        vm.startBroadcast(deployerPrivateKey);
+
+        // Deploy Simple Verification Consumer
+        console.log("\n=== Deploying Simple Verification Consumer ===");
+        simpleVerificationConsumer = new SimpleVerificationConsumer(blsSignatureCheckerAddress);
+        console.log("Simple Verification Consumer deployed at:", address(simpleVerificationConsumer));
+
+        vm.stopBroadcast();
+
+        writeDeploymentJson(address(0), blsSignatureCheckerAddress);
+        printDeploymentSummary(address(0));
+    }
+
+    /**
+     * @notice Deploy all contracts including StorageQueryConsumer
+     * @param registryCoordinator Registry coordinator address (or 0x0 to use env/default)
+     */
+    function runFull(address registryCoordinator) external {
+        if (registryCoordinator == address(0)) {
+            registryCoordinator = getRegistryCoordinator();
+        }
+
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+
+        console.log("Starting full OpacitySDK deployment...");
+        console.log("Deployer address:", vm.addr(deployerPrivateKey));
+        console.log("Registry Coordinator:", registryCoordinator);
+
+        vm.startBroadcast(deployerPrivateKey);
+
+        // Deploy BLS Signature Checker
+        console.log("\n=== Deploying BLS Signature Checker ===");
+        blsSignatureChecker = new BLSSignatureChecker(IRegistryCoordinator(registryCoordinator));
+        console.log("BLS Signature Checker deployed at:", address(blsSignatureChecker));
+
+        // Deploy Simple Verification Consumer
+        console.log("\n=== Deploying Simple Verification Consumer ===");
+        simpleVerificationConsumer = new SimpleVerificationConsumer(address(blsSignatureChecker));
+        console.log("Simple Verification Consumer deployed at:", address(simpleVerificationConsumer));
+
+        // Deploy Storage Query Consumer
+        console.log("\n=== Deploying Storage Query Consumer ===");
+        storageQueryConsumer = new StorageQueryConsumer(address(blsSignatureChecker));
+        console.log("Storage Query Consumer deployed at:", address(storageQueryConsumer));
+
+        vm.stopBroadcast();
+
+        writeDeploymentJson(registryCoordinator, address(0));
+        printDeploymentSummary(registryCoordinator);
+    }
+
+    /**
+     * @notice Write deployment addresses to JSON file
+     * @param registryCoordinator Registry coordinator used (0x0 if not deployed)
+     * @param existingBLS Existing BLS address if used (0x0 if newly deployed)
+     */
+    function writeDeploymentJson(address registryCoordinator, address existingBLS) internal {
+        string memory json = "deployment";
+
+        if (existingBLS != address(0)) {
+            vm.serializeAddress(json, "blsSignatureChecker", existingBLS);
+            vm.serializeString(json, "blsSignatureCheckerStatus", "existing");
+        } else {
+            vm.serializeAddress(json, "blsSignatureChecker", address(blsSignatureChecker));
+            vm.serializeString(json, "blsSignatureCheckerStatus", "deployed");
+        }
+
+        if (registryCoordinator != address(0)) {
+            vm.serializeAddress(json, "registryCoordinator", registryCoordinator);
+        }
+
+        vm.serializeAddress(json, "simpleVerificationConsumer", address(simpleVerificationConsumer));
+
+        if (address(storageQueryConsumer) != address(0)) {
+            vm.serializeAddress(json, "storageQueryConsumer", address(storageQueryConsumer));
+        }
+
+        string memory finalJson = vm.serializeUint(json, "timestamp", block.timestamp);
+
+        vm.writeJson(finalJson, "./deployments/latest.json");
+        console.log("\nDeployment addresses written to deployments/latest.json");
     }
 
     /**
@@ -68,55 +166,36 @@ contract Deploy is Script {
         console.log("\n========================================");
         console.log("       DEPLOYMENT SUMMARY");
         console.log("========================================");
-        console.log("Registry Coordinator:        ", registryCoordinator);
+
+        if (registryCoordinator != address(0)) {
+            console.log("Registry Coordinator:        ", registryCoordinator);
+        }
+
         console.log("BLS Signature Checker:       ", address(blsSignatureChecker));
         console.log("Simple Verification Consumer:", address(simpleVerificationConsumer));
+
+        if (address(storageQueryConsumer) != address(0)) {
+            console.log("Storage Query Consumer:      ", address(storageQueryConsumer));
+        }
+
         console.log("========================================");
 
         console.log("\n=== Verification Check ===");
         console.log("Simple Consumer BLS Address: ", address(simpleVerificationConsumer.blsSignatureChecker()));
 
-        bool linked = address(simpleVerificationConsumer.blsSignatureChecker()) == address(blsSignatureChecker);
-        console.log("Simple Consumer properly linked: ", linked);
+        bool simpleLinked = address(simpleVerificationConsumer.blsSignatureChecker()) == address(blsSignatureChecker);
+        console.log("Simple Consumer properly linked: ", simpleLinked);
 
-        if (linked) {
-            console.log("All contracts deployed and linked successfully!");
-        } else {
-            console.log("Contract linking verification failed!");
+        if (address(storageQueryConsumer) != address(0)) {
+            console.log("Storage Consumer BLS Address:", address(storageQueryConsumer.blsSignatureChecker()));
+            bool storageLinked = address(storageQueryConsumer.blsSignatureChecker()) == address(blsSignatureChecker);
+            console.log("Storage Consumer properly linked:", storageLinked);
+
+            if (simpleLinked && storageLinked) {
+                console.log("\nAll contracts deployed and linked successfully!");
+            }
+        } else if (simpleLinked) {
+            console.log("\nAll contracts deployed and linked successfully!");
         }
-    }
-
-    /**
-     * @notice Deploy all Opacity examples with default registry coordinator
-     */
-    function deployExamplesDefault() external {
-        DeployOpacityExamples deployer = new DeployOpacityExamples();
-        deployer.run(DEFAULT_REGISTRY_COORDINATOR);
-    }
-
-    /**
-     * @notice Deploy all Opacity examples with custom registry coordinator
-     * @param registryCoordinator The registry coordinator address to use
-     */
-    function deployExamplesCustom(address registryCoordinator) external {
-        DeployOpacityExamples deployer = new DeployOpacityExamples();
-        deployer.run(registryCoordinator);
-    }
-
-    /**
-     * @notice Deploy BLS Signature Checker with default registry coordinator
-     */
-    function deployBLSDefault() external {
-        DeployBLSSignatureChecker deployer = new DeployBLSSignatureChecker();
-        deployer.run(DEFAULT_REGISTRY_COORDINATOR);
-    }
-
-    /**
-     * @notice Deploy BLS Signature Checker with custom registry coordinator
-     * @param registryCoordinator The registry coordinator address to use
-     */
-    function deployBLSCustom(address registryCoordinator) external {
-        DeployBLSSignatureChecker deployer = new DeployBLSSignatureChecker();
-        deployer.run(registryCoordinator);
     }
 }

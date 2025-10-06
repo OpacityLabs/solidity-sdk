@@ -22,45 +22,54 @@ PRIVATE_KEY=your_private_key_here
 ### 3. Deploy on Holesky Testnet
 
 ```bash
-# Deploy all contracts with default Holesky registry coordinator (0x3e43AA225b5cB026C5E8a53f62572b10D526a50B)
-forge script script/Deploy.s.sol:Deploy --sig "deployExamplesDefault()" --rpc-url holesky --broadcast
+# Default deployment - deploys BLS + SimpleVerificationConsumer
+forge script script/Deploy.s.sol:Deploy --rpc-url holesky --broadcast
 
-# Or deploy with a custom registry coordinator address
-forge script script/DeployOpacityExamples.s.sol:DeployOpacityExamples --sig "run(address)" <REGISTRY_COORDINATOR_ADDRESS> --rpc-url holesky --broadcast
+# Deploy with existing BLS signature checker
+forge script script/Deploy.s.sol:Deploy --sig "runWithBLS(address)" <BLS_ADDRESS> --rpc-url holesky --broadcast
+
+# Full deployment including StorageQueryConsumer
+forge script script/Deploy.s.sol:Deploy --sig "runFull(address)" 0x0 --rpc-url holesky --broadcast
 ```
 
-This command will:
-1. Deploy the BLS signature checker contract
-2. Deploy the SimpleVerificationConsumer example
-3. Deploy the StorageQueryConsumer contract
-4. Verify all contracts are properly linked
-5. Output all deployed addresses
+All deployments:
+- Write addresses to `deployments/latest.json`
+- Use `REGISTRY_COORDINATOR` env var or default Holesky address
+- Verify contracts are properly linked
+- Output deployment summary
 
-### Example Deployment Output 
+### Example Deployment Output
 
 ```
 ========================================
-         DEPLOYMENT SUMMARY
-  ========================================
-  Registry Coordinator:         0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
-  BLS Signature Checker:        0x2a55810daCeF9197d51B94A21c67d88b8d99b379
-  Simple Verification Consumer: 0x1b4468ce3306f886d4a741950acE0238e4204cdb
-  Storage Query Consumer:       0x5aEA3238EfEeacaB01aEf8209811FE1d2E1F1f19
-  ========================================
-  
-=== Verification Checks ===
-  Simple Consumer BLS Address:  0xD00873BbA73E4aecb5709d31539081E0a45a67bC
-  Storage Consumer BLS Address: 0xD00873BbA73E4aecb5709d31539081E0a45a67bC
-  Simple Consumer properly linked:  true
-  Storage Consumer properly linked: true
-  All contracts deployed and linked successfully!
+       DEPLOYMENT SUMMARY
+========================================
+Registry Coordinator:         0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
+BLS Signature Checker:        0x2a55810daCeF9197d51B94A21c67d88b8d99b379
+Simple Verification Consumer: 0x1b4468ce3306f886d4a741950acE0238e4204cdb
+========================================
+
+=== Verification Check ===
+Simple Consumer BLS Address:  0x2a55810daCeF9197d51B94A21c67d88b8d99b379
+Simple Consumer properly linked:  true
+All contracts deployed and linked successfully!
+
+Deployment addresses written to deployments/latest.json
 ```
 
-### Contract Links on Holeskyscan
+### Deployment JSON Output
 
-- [BLS Signature Checker](https://holesky.etherscan.io/address/0x2a55810daCeF9197d51B94A21c67d88b8d99b379)
-- [Simple Verification Consumer](https://holesky.etherscan.io/address/0x1b4468ce3306f886d4a741950acE0238e4204cdb)
-- [Storage Query Consumer](https://holesky.etherscan.io/address/0x5aEA3238EfEeacaB01aEf8209811FE1d2E1F1f19)
+After deployment, addresses are saved to `deployments/latest.json`:
+
+```json
+{
+  "blsSignatureChecker": "0x2a55810daCeF9197d51B94A21c67d88b8d99b379",
+  "blsSignatureCheckerStatus": "deployed",
+  "registryCoordinator": "0x3e43AA225b5cB026C5E8a53f62572b10D526a50B",
+  "simpleVerificationConsumer": "0x1b4468ce3306f886d4a741950acE0238e4204cdb",
+  "timestamp": 1234567890
+}
+```
 
 ## Usage Examples
 
@@ -146,30 +155,34 @@ forge snapshot
 
 ### Registry Coordinator
 
-The deployment scripts now support configurable registry coordinator addresses:
+The deployment script supports configurable registry coordinator addresses:
 
 - **Default Holesky Address**: `0x3e43AA225b5cB026C5E8a53f62572b10D526a50B`
-- **Custom Deployment**: Pass any registry coordinator address as a parameter
-
-#### Using the Helper Script (Deploy.s.sol)
+- **Custom Address**: Set `REGISTRY_COORDINATOR` in `.env` file
 
 ```bash
-# Deploy with default Holesky registry coordinator
-forge script script/Deploy.s.sol:Deploy --sig "deployExamplesDefault()" --rpc-url <RPC_URL> --broadcast
-
-# Deploy with custom registry coordinator
-forge script script/Deploy.s.sol:Deploy --sig "deployExamplesCustom(address)" <REGISTRY_COORDINATOR> --rpc-url <RPC_URL> --broadcast
+# In .env file
+REGISTRY_COORDINATOR=0x...
 ```
 
-#### Direct Deployment Scripts
+### Deployment Options
 
+**1. Default Deployment** - Deploys BLS + SimpleVerificationConsumer
 ```bash
-# Deploy BLS Signature Checker only
-forge script script/DeployBLSSignatureChecker.s.sol:DeployBLSSignatureChecker --sig "run(address)" <REGISTRY_COORDINATOR> --rpc-url <RPC_URL> --broadcast
-
-# Deploy all examples
-forge script script/DeployOpacityExamples.s.sol:DeployOpacityExamples --sig "run(address)" <REGISTRY_COORDINATOR> --rpc-url <RPC_URL> --broadcast
+forge script script/Deploy.s.sol:Deploy --rpc-url holesky --broadcast
 ```
+
+**2. Use Existing BLS** - Only deploys SimpleVerificationConsumer
+```bash
+forge script script/Deploy.s.sol:Deploy --sig "runWithBLS(address)" <BLS_ADDRESS> --rpc-url holesky --broadcast
+```
+
+**3. Full Deployment** - Includes StorageQueryConsumer
+```bash
+forge script script/Deploy.s.sol:Deploy --sig "runFull(address)" 0x0 --rpc-url holesky --broadcast
+# Pass 0x0 to use env/default registry coordinator, or pass specific address
+```
+
 ---
 
 ## Foundry Documentation
