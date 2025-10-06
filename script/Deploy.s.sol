@@ -22,22 +22,18 @@ contract Deploy is Script {
     StorageQueryConsumer public storageQueryConsumer;
 
     /**
-     * @notice Get registry coordinator address from env or use default
-     * @return address The registry coordinator address
+     * @notice Default deployment - deploys BLS + SimpleVerificationConsumer with default registry coordinator
      */
-    function getRegistryCoordinator() internal view returns (address) {
-        try vm.envAddress("REGISTRY_COORDINATOR") returns (address envAddress) {
-            return envAddress;
-        } catch {
-            return DEFAULT_REGISTRY_COORDINATOR;
-        }
+    function run() external {
+        run(DEFAULT_REGISTRY_COORDINATOR);
     }
 
     /**
-     * @notice Default deployment - deploys BLS + SimpleVerificationConsumer
+     * @notice Deploy BLS + SimpleVerificationConsumer with custom registry coordinator
+     * @param registryCoordinator Registry coordinator address
      */
-    function run() external {
-        address registryCoordinator = getRegistryCoordinator();
+    function run(address registryCoordinator) public {
+        require(registryCoordinator != address(0), "Invalid registry coordinator address");
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         console.log("Starting OpacitySDK deployment...");
@@ -90,14 +86,18 @@ contract Deploy is Script {
     }
 
     /**
-     * @notice Deploy all contracts including StorageQueryConsumer
-     * @param registryCoordinator Registry coordinator address (or 0x0 to use env/default)
+     * @notice Deploy all contracts including StorageQueryConsumer with default registry coordinator
      */
-    function runFull(address registryCoordinator) external {
-        if (registryCoordinator == address(0)) {
-            registryCoordinator = getRegistryCoordinator();
-        }
+    function runFull() external {
+        runFull(DEFAULT_REGISTRY_COORDINATOR);
+    }
 
+    /**
+     * @notice Deploy all contracts including StorageQueryConsumer with custom registry coordinator
+     * @param registryCoordinator Registry coordinator address
+     */
+    function runFull(address registryCoordinator) public {
+        require(registryCoordinator != address(0), "Invalid registry coordinator address");
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         console.log("Starting full OpacitySDK deployment...");
