@@ -22,18 +22,15 @@ PRIVATE_KEY=your_private_key_here
 ### 3. Deploy on Holesky Testnet
 
 ```bash
-# Deploy new BLS + SimpleVerificationConsumer
-forge script script/Deploy.s.sol:Deploy --sig "run(address)" <REGISTRY_COORDINATOR> --rpc-url holesky --broadcast
-
-# Deploy with existing BLS signature checker
+# Deploy SimpleVerificationConsumer
 forge script script/Deploy.s.sol:Deploy --sig "run(address,address)" <BLS_ADDRESS> <REGISTRY_COORDINATOR> --rpc-url holesky --broadcast
 ```
 
-Both deployment modes:
-- Deploy SimpleVerificationConsumer
-- Write addresses to `deployments/latest.json`
-- Verify contracts are properly linked
-- Output deployment summary
+Deployment:
+- Deploys SimpleVerificationConsumer with provided BLS signature checker
+- Writes addresses to `deployments/latest.json`
+- Verifies contracts are properly linked
+- Outputs deployment summary
 
 ### Deployment JSON Output
 
@@ -42,7 +39,6 @@ After deployment, addresses are saved to `deployments/latest.json`:
 ```json
 {
   "blsSignatureChecker": "0x2a55810daCeF9197d51B94A21c67d88b8d99b379",
-  "blsSignatureCheckerStatus": "deployed",
   "registryCoordinator": "0x3e43AA225b5cB026C5E8a53f62572b10D526a50B",
   "simpleVerificationConsumer": "0x1b4468ce3306f886d4a741950acE0238e4204cdb",
   "timestamp": 1234567890
@@ -131,21 +127,14 @@ forge snapshot
 
 ## Deployment Configuration
 
-### Deployment Modes
+### Required Arguments
 
-**1. Deploy new BLS + SimpleVerificationConsumer**
-```bash
-forge script script/Deploy.s.sol:Deploy --sig "run(address)" <REGISTRY_COORDINATOR> --rpc-url holesky --broadcast
-```
-
-**2. Deploy with existing BLS signature checker**
 ```bash
 forge script script/Deploy.s.sol:Deploy --sig "run(address,address)" <BLS_ADDRESS> <REGISTRY_COORDINATOR> --rpc-url holesky --broadcast
 ```
 
-Both modes require:
+- `blsSignatureCheckerAddress`: Address of the BLS signature checker contract
 - `registryCoordinator`: Address of the registry coordinator contract
-- `blsSignatureCheckerAddress` (mode 2 only): Address of existing BLS signature checker
 
 ---
 

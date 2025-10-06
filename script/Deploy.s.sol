@@ -16,39 +16,9 @@ contract Deploy is Script {
     SimpleVerificationConsumer public simpleVerificationConsumer;
 
     /**
-     * @notice Deploy SimpleVerificationConsumer with new BLS signature checker
-     * @param registryCoordinator Registry coordinator address for new BLS deployment
-     */
-    function run(address registryCoordinator) external {
-        require(registryCoordinator != address(0), "Invalid registry coordinator address");
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-
-        console.log("Starting OpacitySDK deployment...");
-        console.log("Deployer address:", vm.addr(deployerPrivateKey));
-        console.log("Registry Coordinator:", registryCoordinator);
-
-        vm.startBroadcast(deployerPrivateKey);
-
-        // Deploy BLS Signature Checker
-        console.log("\n=== Deploying BLS Signature Checker ===");
-        blsSignatureChecker = new BLSSignatureChecker(IRegistryCoordinator(registryCoordinator));
-        console.log("BLS Signature Checker deployed at:", address(blsSignatureChecker));
-
-        // Deploy Simple Verification Consumer
-        console.log("\n=== Deploying Simple Verification Consumer ===");
-        simpleVerificationConsumer = new SimpleVerificationConsumer(address(blsSignatureChecker));
-        console.log("Simple Verification Consumer deployed at:", address(simpleVerificationConsumer));
-
-        vm.stopBroadcast();
-
-        writeDeploymentJson(registryCoordinator, false);
-        printDeploymentSummary();
-    }
-
-    /**
-     * @notice Deploy SimpleVerificationConsumer with existing BLS signature checker
-     * @param blsSignatureCheckerAddress Existing BLS signature checker address
-     * @param registryCoordinator Registry coordinator address (for reference only)
+     * @notice Deploy SimpleVerificationConsumer
+     * @param blsSignatureCheckerAddress BLS signature checker address
+     * @param registryCoordinator Registry coordinator address
      */
     function run(address blsSignatureCheckerAddress, address registryCoordinator) external {
         require(blsSignatureCheckerAddress != address(0), "Invalid BLS address");
@@ -57,10 +27,10 @@ contract Deploy is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         blsSignatureChecker = BLSSignatureChecker(blsSignatureCheckerAddress);
 
-        console.log("Starting OpacitySDK deployment with existing BLS...");
+        console.log("Starting OpacitySDK deployment...");
         console.log("Deployer address:", vm.addr(deployerPrivateKey));
+        console.log("BLS Signature Checker:", blsSignatureCheckerAddress);
         console.log("Registry Coordinator:", registryCoordinator);
-        console.log("Using BLS Signature Checker:", blsSignatureCheckerAddress);
 
         vm.startBroadcast(deployerPrivateKey);
 
@@ -71,20 +41,18 @@ contract Deploy is Script {
 
         vm.stopBroadcast();
 
-        writeDeploymentJson(registryCoordinator, true);
+        writeDeploymentJson(registryCoordinator);
         printDeploymentSummary();
     }
 
     /**
      * @notice Write deployment addresses to JSON file
      * @param registryCoordinator Registry coordinator address
-     * @param blsExisted Whether BLS was pre-existing
      */
-    function writeDeploymentJson(address registryCoordinator, bool blsExisted) internal {
+    function writeDeploymentJson(address registryCoordinator) internal {
         string memory json = "deployment";
 
         vm.serializeAddress(json, "blsSignatureChecker", address(blsSignatureChecker));
-        vm.serializeString(json, "blsSignatureCheckerStatus", blsExisted ? "existing" : "deployed");
         vm.serializeAddress(json, "registryCoordinator", registryCoordinator);
         vm.serializeAddress(json, "simpleVerificationConsumer", address(simpleVerificationConsumer));
 
