@@ -22,42 +22,28 @@ PRIVATE_KEY=your_private_key_here
 ### 3. Deploy on Holesky Testnet
 
 ```bash
-# Deploy all contracts (BLS signature checker + examples)
-forge script script/DeployOpacityExamples.s.sol:DeployOpacityExamples --rpc-url holesky --broadcast
+# Deploy SimpleVerificationConsumer
+forge script script/Deploy.s.sol:Deploy --sig "run(address,address)" <BLS_ADDRESS> <REGISTRY_COORDINATOR> --rpc-url holesky --broadcast
 ```
 
-This command will:
-1. Deploy the BLS signature checker contract
-2. Deploy the SimpleVerificationConsumer example
-3. Deploy the StorageQueryConsumer contract
-4. Verify all contracts are properly linked
-5. Output all deployed addresses
+Deployment:
+- Deploys SimpleVerificationConsumer with provided BLS signature checker
+- Writes addresses to `deployments/latest.json`
+- Verifies contracts are properly linked
+- Outputs deployment summary
 
-### Example Deployment Output 
+### Deployment JSON Output
 
+After deployment, addresses are saved to `deployments/latest.json`:
+
+```json
+{
+  "blsSignatureChecker": "0x2a55810daCeF9197d51B94A21c67d88b8d99b379",
+  "registryCoordinator": "0x3e43AA225b5cB026C5E8a53f62572b10D526a50B",
+  "simpleVerificationConsumer": "0x1b4468ce3306f886d4a741950acE0238e4204cdb",
+  "timestamp": 1234567890
+}
 ```
-========================================
-         DEPLOYMENT SUMMARY
-  ========================================
-  Registry Coordinator:         0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
-  BLS Signature Checker:        0x2a55810daCeF9197d51B94A21c67d88b8d99b379
-  Simple Verification Consumer: 0x1b4468ce3306f886d4a741950acE0238e4204cdb
-  Storage Query Consumer:       0x5aEA3238EfEeacaB01aEf8209811FE1d2E1F1f19
-  ========================================
-  
-=== Verification Checks ===
-  Simple Consumer BLS Address:  0xD00873BbA73E4aecb5709d31539081E0a45a67bC
-  Storage Consumer BLS Address: 0xD00873BbA73E4aecb5709d31539081E0a45a67bC
-  Simple Consumer properly linked:  true
-  Storage Consumer properly linked: true
-  All contracts deployed and linked successfully!
-```
-
-### Contract Links on Holeskyscan
-
-- [BLS Signature Checker](https://holesky.etherscan.io/address/0x2a55810daCeF9197d51B94A21c67d88b8d99b379)
-- [Simple Verification Consumer](https://holesky.etherscan.io/address/0x1b4468ce3306f886d4a741950acE0238e4204cdb)
-- [Storage Query Consumer](https://holesky.etherscan.io/address/0x5aEA3238EfEeacaB01aEf8209811FE1d2E1F1f19)
 
 ## Usage Examples
 
@@ -139,8 +125,17 @@ forge snapshot
 - **Foundry**: Development and testing framework
 - **OpenZeppelin**: Standard library contracts (via EigenLayer)
 
-## Important 
-Make sure not to change the registry coordinator address in the deployment scripts
+## Deployment Configuration
+
+### Required Arguments
+
+```bash
+forge script script/Deploy.s.sol:Deploy --sig "run(address,address)" <BLS_ADDRESS> <REGISTRY_COORDINATOR> --rpc-url holesky --broadcast
+```
+
+- `blsSignatureCheckerAddress`: Address of the BLS signature checker contract
+- `registryCoordinator`: Address of the registry coordinator contract
+
 ---
 
 ## Foundry Documentation
