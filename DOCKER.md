@@ -30,7 +30,8 @@ docker run \
 - `latest` - Latest build from the main branch
 - `main` - Latest build from the main branch
 - `v*` - Specific version tags (e.g., `v1.0.0`, `v1.2.3`)
-- `<branch>-<sha>` - Specific commit builds
+- `sha-<commit>` - Specific commit builds (e.g., `sha-abc123d`)
+- `pr-<number>` - Pull request builds (built but not pushed to registry)
 
 ## Building the Docker Image Locally
 
