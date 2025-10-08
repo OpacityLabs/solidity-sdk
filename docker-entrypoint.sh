@@ -34,6 +34,7 @@ forge script script/Deploy.s.sol:Deploy \
     "$BLS_SIGNATURE_CHECKER_ADDRESS" \
     "$REGISTRY_COORDINATOR_ADDRESS" \
     --rpc-url "$RPC_URL" \
+    --private-key "$PRIVATE_KEY" \
     --broadcast
 
 echo ""
