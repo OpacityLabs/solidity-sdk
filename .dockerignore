@@ -1,5 +1,4 @@
-# Git
-.git
+# Git (exclude .github but keep .git for submodules)
 .github
 
 # Environment files with secrets

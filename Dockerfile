@@ -4,11 +4,11 @@ FROM ghcr.io/foundry-rs/foundry:latest
 # Set working directory
 WORKDIR /app
 
-# Copy the entire codebase
+# Copy the entire codebase (includes .git for submodules)
 COPY . .
 
-# Install git submodules (required for Foundry dependencies)
-RUN forge install
+# Initialize and update git submodules (required for Foundry dependencies)
+RUN git submodule update --init --recursive
 
 # Create deployments directory if it doesn't exist
 RUN mkdir -p /app/deployments
