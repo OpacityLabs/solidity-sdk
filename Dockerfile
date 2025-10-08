@@ -8,7 +8,9 @@ WORKDIR /app
 COPY . .
 
 # Initialize and update git submodules (required for Foundry dependencies)
-RUN git submodule update --init --recursive
+# Add safe.directory config to allow git operations in Docker
+RUN git config --global --add safe.directory /app && \
+    git submodule update --init --recursive
 
 # Create deployments directory if it doesn't exist
 RUN mkdir -p /app/deployments
