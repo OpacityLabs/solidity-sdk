@@ -1,0 +1,28 @@
+# Git
+.git
+.github
+.gitmodules
+
+# Environment files with secrets
+.env
+*.env
+
+# Build artifacts
+out/
+cache/
+broadcast/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+
+# Deployments (will be written at runtime)
+deployments/*.json
