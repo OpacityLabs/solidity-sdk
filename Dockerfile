@@ -4,13 +4,8 @@ FROM ghcr.io/foundry-rs/foundry:latest
 # Set working directory
 WORKDIR /app
 
-# Copy the entire codebase (includes .git for submodules)
+# Copy the entire codebase
 COPY . .
-
-# Initialize and update git submodules (required for Foundry dependencies)
-# Add safe.directory config to allow git operations in Docker
-RUN git config --global --add safe.directory /app && \
-    git submodule update --init --recursive
 
 # Create deployments directory if it doesn't exist
 RUN mkdir -p /app/deployments
