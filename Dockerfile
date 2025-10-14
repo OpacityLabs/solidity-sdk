@@ -5,10 +5,11 @@ FROM ghcr.io/foundry-rs/foundry:latest
 WORKDIR /app
 
 # Copy the entire codebase
-COPY . .
+COPY --chown=foundry:foundry . .
 
-# Create deployments directory if it doesn't exist
-RUN mkdir -p /app/deployments
+# Ensure deployments directory exists and has proper permissions
+RUN mkdir -p /app/deployments && \
+    chmod 755 /app/deployments
 
 # Set entrypoint script with execute permissions
 COPY --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
