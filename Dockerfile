@@ -7,9 +7,10 @@ WORKDIR /app
 # Copy the entire codebase
 COPY --chown=foundry:foundry . .
 
-# Ensure deployments directory exists and has proper permissions
+# Ensure deployments directory exists with proper permissions and ownership
 RUN mkdir -p /app/deployments && \
-    chmod 755 /app/deployments
+    chown -R foundry:foundry /app/deployments && \
+    chmod -R 755 /app/deployments
 
 # Set entrypoint script with execute permissions
 COPY --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
