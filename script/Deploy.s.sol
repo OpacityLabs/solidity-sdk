@@ -41,25 +41,7 @@ contract Deploy is Script {
 
         vm.stopBroadcast();
 
-        writeDeploymentJson(registryCoordinator);
         printDeploymentSummary();
-    }
-
-    /**
-     * @notice Write deployment addresses to JSON file
-     * @param registryCoordinator Registry coordinator address
-     */
-    function writeDeploymentJson(address registryCoordinator) internal {
-        string memory json = "deployment";
-
-        vm.serializeAddress(json, "blsSignatureChecker", address(blsSignatureChecker));
-        vm.serializeAddress(json, "registryCoordinator", registryCoordinator);
-        vm.serializeAddress(json, "simpleVerificationConsumer", address(simpleVerificationConsumer));
-
-        string memory finalJson = vm.serializeUint(json, "timestamp", block.timestamp);
-
-        vm.writeJson(finalJson, "./deployments/latest.json");
-        console.log("\nDeployment addresses written to deployments/latest.json");
     }
 
     /**
