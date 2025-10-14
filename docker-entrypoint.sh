@@ -1,6 +1,21 @@
 #!/bin/bash
 set -e
 
+# Check write permissions to deployment directory
+echo "Checking deployment directory permissions..."
+echo "Current user: $(whoami) (UID: $(id -u), GID: $(id -g))"
+echo "Deployment directory: /app/deployments"
+ls -ld /app/deployments
+
+if [ ! -w /app/deployments ]; then
+    echo "ERROR: /app/deployments is not writable by current user"
+    echo "Please ensure the directory has proper permissions or use a volume mount"
+    exit 1
+fi
+
+echo "✓ Deployment directory is writable"
+echo ""
+
 # Validate required environment variables
 if [ -z "$PRIVATE_KEY" ]; then
     echo "Error: PRIVATE_KEY environment variable is required"
