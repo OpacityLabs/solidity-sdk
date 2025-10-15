@@ -1,6 +1,11 @@
 # Use Foundry base image
 FROM ghcr.io/foundry-rs/foundry:latest
 
+# Install jq as root
+USER root
+RUN apt-get update && apt-get install -y jq && rm -rf /var/lib/apt/lists/*
+USER foundry
+
 # Set working directory
 WORKDIR /app
 
