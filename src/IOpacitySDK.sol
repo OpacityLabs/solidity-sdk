@@ -56,11 +56,8 @@ interface IOpacitySDK {
     /**
      * @notice Conditional atom representing a single condition check
      * @dev CondAtom structures define individual conditions that can be applied to resources.
-     *      Supported condition types:
-     *      - "substr": Checks if the resource value contains the specified substring
-     *      - "gt": Checks if the numeric resource value is greater than the threshold
-     * @param atomType The type of condition to evaluate ("substr" or "gt")
-     * @param value The condition parameter (substring to find, or numeric threshold as string)
+     * @param atomType The type of condition to evaluate
+     * @param value The condition parameter
      */
     struct CondAtom {
         string atomType;
