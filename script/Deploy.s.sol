@@ -8,17 +8,38 @@ import "../src/examples/SimpleVerificationConsumer.sol";
 
 /**
  * @title Deploy
- * @notice Main deployment script for OpacitySDK contracts
+ * @notice Foundry deployment script for OpacitySDK example contracts
+ * @dev This script deploys the SimpleVerificationConsumer contract using an existing
+ *      BLS signature checker. It requires:
+ *      - PRIVATE_KEY environment variable set with the deployer's private key
+ *      - A deployed BLS signature checker address
+ *      - A deployed registry coordinator address
+ *
+ *      Usage:
+ *      ```bash
+ *      forge script script/Deploy.s.sol:Deploy \
+ *        --sig "run(address,address)" <blsCheckerAddr> <registryCoordAddr> \
+ *        --rpc-url $RPC_URL --broadcast
+ *      ```
  */
 contract Deploy is Script {
-    // Deployed contracts
+    /**
+     * @notice Reference to the BLS signature checker contract
+     */
     BLSSignatureChecker public blsSignatureChecker;
+
+    /**
+     * @notice The deployed SimpleVerificationConsumer instance
+     */
     SimpleVerificationConsumer public simpleVerificationConsumer;
 
     /**
-     * @notice Deploy SimpleVerificationConsumer
-     * @param blsSignatureCheckerAddress BLS signature checker address
-     * @param registryCoordinator Registry coordinator address
+     * @notice Main deployment entrypoint
+     * @dev Deploys a SimpleVerificationConsumer linked to the provided BLS signature checker.
+     *      Reads PRIVATE_KEY from environment variables for transaction signing.
+     *      Logs deployment progress and final addresses to console.
+     * @param blsSignatureCheckerAddress Address of an already-deployed BLS signature checker (must be non-zero)
+     * @param registryCoordinator Address of the EigenLayer registry coordinator (must be non-zero, used for logging)
      */
     function run(address blsSignatureCheckerAddress, address registryCoordinator) external {
         require(blsSignatureCheckerAddress != address(0), "Invalid BLS address");
@@ -45,7 +66,10 @@ contract Deploy is Script {
     }
 
     /**
-     * @notice Print deployment summary
+     * @notice Prints a summary of all deployed contracts and verifies linkage
+     * @dev Internal helper function called after deployment completes.
+     *      Verifies that the SimpleVerificationConsumer is correctly linked
+     *      to the BLS signature checker by comparing stored addresses.
      */
     function printDeploymentSummary() internal view {
         console.log("\n========================================");

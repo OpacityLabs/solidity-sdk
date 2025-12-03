@@ -8,13 +8,30 @@ import "../src/examples/SimpleVerificationConsumer.sol";
 
 /**
  * @title OpacitySDKTest
- * @notice Core tests for OpacitySDK payload hash computation and data structures
+ * @notice Unit tests for OpacitySDK payload hash computation and data structures
+ * @dev Tests the core functionality of the OpacitySDK, specifically:
+ *      - Payload hash computation for various payload configurations
+ *      - Data structure encoding (Resources, ValueReveals, Compositions, Conditions)
+ *      - Hash determinism and uniqueness properties
+ *
+ *      Note: These tests use a mocked BLS signature checker and do not test
+ *      actual BLS signature verification. See integration tests for full verification testing.
  */
 contract OpacitySDKTest is Test {
+    /// @notice The consumer contract instance used for testing
     SimpleVerificationConsumer public consumer;
+
+    /// @notice Mock address for the BLS signature checker
     address public blsSignatureChecker;
+
+    /// @notice Test user address used in payload construction
     address public testUser;
 
+    /**
+     * @notice Sets up the test environment before each test
+     * @dev Deploys a SimpleVerificationConsumer with a mocked BLS signature checker.
+     *      The mock checker has minimal bytecode (0x00) to allow deployment.
+     */
     function setUp() public {
         // Mock BLS signature checker address
         blsSignatureChecker = address(0x1234);
@@ -25,6 +42,11 @@ contract OpacitySDKTest is Test {
         consumer = new SimpleVerificationConsumer(blsSignatureChecker);
     }
 
+    /**
+     * @notice Tests basic payload hash computation with empty arrays
+     * @dev Verifies that a minimal payload with no values, compositions, or conditions
+     *      produces a non-zero hash
+     */
     function testComputePayloadHashBasic() public {
         IOpacitySDK.ValueReveal[] memory values = new IOpacitySDK.ValueReveal[](0);
         IOpacitySDK.Composition[] memory compositions = new IOpacitySDK.Composition[](0);
@@ -42,6 +64,11 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash, bytes32(0), "Payload hash should not be zero");
     }
 
+    /**
+     * @notice Tests payload hash computation with value reveals
+     * @dev Creates two bank balance resources with numeric values and verifies
+     *      the resulting hash is non-zero
+     */
     function testComputePayloadHashWithValues() public {
         // Create resources
         IOpacitySDK.Resource memory resource1 =
@@ -70,6 +97,11 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash, bytes32(0), "Payload hash with values should not be zero");
     }
 
+    /**
+     * @notice Tests payload hash computation with a sum composition
+     * @dev Creates a composition that sums two bank balance resources
+     *      and verifies the hash is non-zero
+     */
     function testComputePayloadHashWithCompositions() public {
         // Create resources
         IOpacitySDK.Resource memory resource1 =
@@ -101,6 +133,10 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash, bytes32(0), "Payload hash with compositions should not be zero");
     }
 
+    /**
+     * @notice Tests payload hash computation with a greater-than condition
+     * @dev Creates a condition requiring balance > 500 and verifies the hash is non-zero
+     */
     function testComputePayloadHashWithConditions() public {
         // Create resource
         IOpacitySDK.Resource memory resource =
@@ -132,6 +168,15 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash, bytes32(0), "Payload hash with conditions should not be zero");
     }
 
+    /**
+     * @notice Tests payload hash computation with a comprehensive payload
+     * @dev Creates a complete payload with:
+     *      - 3 value reveals (2 bank balances + 1 employer)
+     *      - 1 sum composition
+     *      - 3 conditions (balance thresholds + substring check)
+     *      - A mock signature
+     *      Verifies all components hash correctly together
+     */
     function testFullCommitmentPayload() public {
         // Create resources
         IOpacitySDK.Resource memory bankResource1 =
@@ -198,6 +243,11 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash, bytes32(0), "Full commitment payload hash should not be zero");
     }
 
+    /**
+     * @notice Tests payload hash with multiple condition atoms in a single group
+     * @dev Creates a condition group with two gt conditions (> 100 AND > 500)
+     *      applied to the same resource, verifying AND logic encoding
+     */
     function testMultipleConditionAtoms() public {
         // Test multiple condition atoms in one group
         IOpacitySDK.Resource memory resource =
@@ -228,6 +278,11 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash, bytes32(0), "Payload with multiple condition atoms should hash correctly");
     }
 
+    /**
+     * @notice Tests payload hash with a concat composition
+     * @dev Creates a composition that concatenates firstName and lastName resources,
+     *      verifying string composition encoding
+     */
     function testConcatComposition() public {
         // Test concat operation
         IOpacitySDK.Resource memory resource1 =
@@ -258,6 +313,11 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash, bytes32(0), "Concat composition should hash correctly");
     }
 
+    /**
+     * @notice Tests that different user addresses produce different hashes
+     * @dev Creates two identical payloads differing only in userAddr,
+     *      verifying that the hash is sensitive to the user address
+     */
     function testEmptyPayloadDifferentUsers() public {
         // Test that same payload structure with different users produces different hashes
         IOpacitySDK.ValueReveal[] memory values = new IOpacitySDK.ValueReveal[](0);
@@ -286,6 +346,15 @@ contract OpacitySDKTest is Test {
         assertNotEq(hash1, hash2, "Different users should produce different payload hashes");
     }
 
+    /**
+     * @notice Tests payload hash determinism with a known expected value
+     * @dev Uses hardcoded inputs and expected output to verify:
+     *      1. Hash computation is deterministic across runs
+     *      2. Hash matches off-chain computed value
+     *      3. Any changes to encoding would be detected as test failures
+     *
+     *      Expected hash: 0xa3f9c50a7b411f721324549daa11a23f82fc9defd756075a3f76edbbf667aef2
+     */
     function testHardcodedPayloadHashWithValueReveals() public {
         // This test uses a fixed example with hardcoded expected hash
         // to ensure the payload hash computation remains consistent
