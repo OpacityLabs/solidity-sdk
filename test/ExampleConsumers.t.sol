@@ -101,11 +101,7 @@ contract ExampleConsumersTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         // Get stored values (should be empty initially)
@@ -132,11 +128,7 @@ contract ExampleConsumersTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = storageConsumer.computePayloadHash(payload);
