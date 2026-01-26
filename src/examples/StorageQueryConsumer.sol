@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import "../OpacitySDK.sol";
-import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
+import {BN254} from "@eigenlayer-middleware/libraries/BN254.sol";
 
 /**
  * @title StorageQueryConsumer
@@ -25,10 +25,10 @@ contract StorageQueryConsumer is OpacitySDK {
     /**
      * @notice Constructor for StorageQueryConsumer
      * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
-     * @param _watchtowerAddress Address of the watchtower signer
+     * @param _watchtowerPubkey The watchtower's BLS public key (G1 point)
      */
-    constructor(address _blsSignatureChecker, address _watchtowerAddress) 
-        OpacitySDK(_blsSignatureChecker, _watchtowerAddress) {}
+    constructor(address _blsSignatureChecker, BN254.G1Point memory _watchtowerPubkey)
+        OpacitySDK(_blsSignatureChecker, _watchtowerPubkey) {}
 
     /**
      * @notice Verify private data using VerificationParams struct
