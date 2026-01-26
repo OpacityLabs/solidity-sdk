@@ -6,20 +6,10 @@ import "@eigenlayer-middleware/BLSSignatureChecker.sol";
 import "@eigenlayer-middleware/interfaces/IRegistryCoordinator.sol";
 import "../src/examples/SimpleVerificationConsumer.sol";
 
-/**
- * @title Deploy
- * @notice Main deployment script for OpacitySDK contracts
- */
 contract Deploy is Script {
-    // Deployed contracts
     BLSSignatureChecker public blsSignatureChecker;
     SimpleVerificationConsumer public simpleVerificationConsumer;
 
-    /**
-     * @notice Deploy SimpleVerificationConsumer
-     * @param blsSignatureCheckerAddress BLS signature checker address
-     * @param registryCoordinator Registry coordinator address
-     */
     function run(address blsSignatureCheckerAddress, address registryCoordinator) external {
         require(blsSignatureCheckerAddress != address(0), "Invalid BLS address");
         require(registryCoordinator != address(0), "Invalid registry coordinator address");
@@ -44,9 +34,6 @@ contract Deploy is Script {
         printDeploymentSummary();
     }
 
-    /**
-     * @notice Print deployment summary
-     */
     function printDeploymentSummary() internal view {
         console.log("\n========================================");
         console.log("       DEPLOYMENT SUMMARY");

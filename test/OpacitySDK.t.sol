@@ -6,10 +6,6 @@ import "../src/OpacitySDK.sol";
 import "../src/IOpacitySDK.sol";
 import "../src/examples/SimpleVerificationConsumer.sol";
 
-/**
- * @title OpacitySDKTest
- * @notice Core tests for OpacitySDK payload hash computation and data structures
- */
 contract OpacitySDKTest is Test {
     SimpleVerificationConsumer public consumer;
     address public blsSignatureChecker;
@@ -31,11 +27,7 @@ contract OpacitySDKTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = consumer.computePayloadHash(payload);
@@ -59,11 +51,7 @@ contract OpacitySDKTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = consumer.computePayloadHash(payload);
@@ -90,11 +78,7 @@ contract OpacitySDKTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = consumer.computePayloadHash(payload);
@@ -121,11 +105,7 @@ contract OpacitySDKTest is Test {
         IOpacitySDK.Composition[] memory compositions = new IOpacitySDK.Composition[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = consumer.computePayloadHash(payload);
@@ -217,11 +197,7 @@ contract OpacitySDKTest is Test {
         IOpacitySDK.Composition[] memory compositions = new IOpacitySDK.Composition[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = consumer.computePayloadHash(payload);
@@ -247,11 +223,7 @@ contract OpacitySDKTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = consumer.computePayloadHash(payload);
@@ -265,19 +237,11 @@ contract OpacitySDKTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload1 = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         IOpacitySDK.CommitmentPayload memory payload2 = IOpacitySDK.CommitmentPayload({
-            userAddr: address(0x9999),
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: address(0x9999), values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash1 = consumer.computePayloadHash(payload1);
@@ -311,11 +275,7 @@ contract OpacitySDKTest is Test {
 
         // Create the commitment payload
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: specificUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: specificUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         // Compute the hash

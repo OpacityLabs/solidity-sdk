@@ -7,10 +7,6 @@ import "../src/IOpacitySDK.sol";
 import "../src/examples/SimpleVerificationConsumer.sol";
 import "../src/examples/StorageQueryConsumer.sol";
 
-/**
- * @title ExampleConsumersTest
- * @notice Tests for the example consumer contracts (SimpleVerificationConsumer and StorageQueryConsumer)
- */
 contract ExampleConsumersTest is Test {
     SimpleVerificationConsumer public simpleConsumer;
     StorageQueryConsumer public storageConsumer;
@@ -60,11 +56,7 @@ contract ExampleConsumersTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         // Get stored values (should be empty initially)
@@ -87,11 +79,7 @@ contract ExampleConsumersTest is Test {
         IOpacitySDK.ConditionGroup[] memory conditions = new IOpacitySDK.ConditionGroup[](0);
 
         IOpacitySDK.CommitmentPayload memory payload = IOpacitySDK.CommitmentPayload({
-            userAddr: testUser,
-            values: values,
-            compositions: compositions,
-            conditions: conditions,
-            sig: hex""
+            userAddr: testUser, values: values, compositions: compositions, conditions: conditions, sig: hex""
         });
 
         bytes32 hash = storageConsumer.computePayloadHash(payload);

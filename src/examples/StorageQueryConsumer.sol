@@ -7,32 +7,68 @@ import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
 
 /**
  * @title StorageQueryConsumer
- * @notice Example contract demonstrating basic opacity verification using OpacitySDK
- * @dev This contract shows how to verify private data and retrieve the verified values
+ * @notice Example contract demonstrating stateful Opacity verification with data storage
+ * @dev This contract shows a more advanced integration with OpacitySDK that:
+ *      - Stores verification results persistently on-chain
+ *      - Tracks publicly revealed values from attestations
+ *      - Provides query functions for verification status and expiration checking
+ *
+ *      Use this as a template for applications that need to:
+ *      - Remember past verifications
+ *      - Access revealed values after verification
+ *      - Implement verification expiration logic
  */
 contract StorageQueryConsumer is OpacitySDK {
+    /**
+     * @notice Stores the result of a verification attempt for a user
+     * @param isVerified Whether the verification succeeded
+     * @param payloadHash The hash of the verified commitment payload
+     * @param timestamp The block timestamp when verification occurred
+     */
     struct VerificationResult {
         bool isVerified;
         bytes32 payloadHash;
         uint256 timestamp;
     }
 
+    /**
+     * @notice Maps user addresses to their most recent verification result
+     * @dev Each user can only have one active verification at a time
+     */
     mapping(address => VerificationResult) public userVerifications;
+
+    /**
+     * @notice Maps user addresses to their array of publicly revealed values
+     * @dev Values are replaced entirely on each new verification
+     */
     mapping(address => IOpacitySDK.ValueReveal[]) public userValues;
 
+    /**
+     * @notice Emitted when a verification attempt is made for a user
+     * @param user The address of the user whose data was verified
+     * @param payloadHash The hash of the commitment payload that was verified
+     * @param success Whether the verification succeeded
+     */
     event DataVerified(address indexed user, bytes32 payloadHash, bool success);
 
     /**
-     * @notice Constructor for StorageQueryConsumer
+     * @notice Initializes the consumer with the BLS signature checker
      * @param _blsSignatureChecker Address of the deployed BLS signature checker contract
      */
     constructor(address _blsSignatureChecker) OpacitySDK(_blsSignatureChecker) {}
 
     /**
-     * @notice Verify commitment data using VerificationParams struct
-     * @dev Primary interface that directly accepts the verification parameters struct
-     * @param params The verification parameters wrapped in a struct
-     * @return success Whether verification succeeded
+     * @notice Verifies a commitment and stores the result and revealed values
+     * @dev This function:
+     *      1. Attempts verification via OpacitySDK.verify()
+     *      2. On success, stores the verification result with timestamp
+     *      3. Replaces any existing revealed values with the new ones
+     *      4. Emits a DataVerified event
+     *
+     *      Note: Any previous verification and values for this user are overwritten.
+     * @param params The verification parameters containing quorum info, reference block,
+     *               BLS signature data, and the commitment payload
+     * @return success True if verification succeeded, false if it failed or reverted
      */
     function verifyCommitment(IOpacitySDK.VerificationParams calldata params) external returns (bool success) {
         try this.verify(params) returns (bool verified) {
@@ -56,20 +92,24 @@ contract StorageQueryConsumer is OpacitySDK {
     }
 
     /**
-     * @notice Get the verified values for a user (public reveals only)
-     * @param user The user to check
-     * @return values Array of public value reveals
+     * @notice Retrieves all publicly revealed values for a user
+     * @dev Returns an empty array if the user has no stored verification or no revealed values.
+     *      These values were disclosed by the user as part of their attestation.
+     * @param user The address of the user to query
+     * @return values Array of ValueReveal structs containing resource and value pairs
      */
     function getUserValues(address user) external view returns (IOpacitySDK.ValueReveal[] memory values) {
         return userValues[user];
     }
 
     /**
-     * @notice Check if a user has valid verification
-     * @param user The user to check
-     * @return isValid Whether the user has valid verification
-     * @return payloadHash The hash of the commitment payload
-     * @return timestamp When the verification was made
+     * @notice Retrieves the verification status and metadata for a user
+     * @dev Returns default values (false, 0x0, 0) if the user has never been verified.
+     *      Note: This does not check expiration - use isVerificationValid() for that.
+     * @param user The address of the user to query
+     * @return isValid Whether the user's most recent verification succeeded
+     * @return payloadHash The keccak256 hash of the verified commitment payload
+     * @return timestamp The block timestamp when verification occurred
      */
     function getUserVerification(address user)
         external
@@ -81,11 +121,16 @@ contract StorageQueryConsumer is OpacitySDK {
     }
 
     /**
-     * @notice Check if a verification is still valid (not expired)
-     * @param user The user to check
-     * @param maxAge Maximum age of verification in seconds
-     * @return isValid Whether the verification is still valid
-     * @return payloadHash The hash of the commitment payload if still valid
+     * @notice Checks if a user's verification is valid and not expired
+     * @dev A verification is valid if:
+     *      1. The user has a stored verification that succeeded (isVerified = true)
+     *      2. The verification occurred within maxAge seconds of the current block
+     *
+     *      Returns bytes32(0) for payloadHash if the verification is expired or invalid.
+     * @param user The address of the user to check
+     * @param maxAge Maximum allowed age of the verification in seconds
+     * @return isValid True if the user has a valid, non-expired verification
+     * @return payloadHash The payload hash if valid, or bytes32(0) if expired/invalid
      */
     function isVerificationValid(address user, uint256 maxAge)
         external
@@ -98,10 +143,12 @@ contract StorageQueryConsumer is OpacitySDK {
     }
 
     /**
-     * @notice Get a specific value reveal for a user by index
-     * @param user The user to check
-     * @param index The index of the value reveal
-     * @return value The value reveal at the specified index
+     * @notice Retrieves a specific revealed value by index
+     * @dev Useful for iterating through values without loading the entire array.
+     *      Reverts with "Index out of bounds" if the index exceeds the array length.
+     * @param user The address of the user to query
+     * @param index The zero-based index of the value reveal to retrieve
+     * @return value The ValueReveal struct at the specified index
      */
     function getUserValueByIndex(address user, uint256 index)
         external
