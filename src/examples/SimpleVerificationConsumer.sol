@@ -11,12 +11,6 @@ import "@eigenlayer-middleware/interfaces/IBLSSignatureChecker.sol";
  * @dev This contract shows the simplest possible integration with OpacitySDK.
  *      It verifies attestations and emits an event on success, but does not store any data.
  *      Use this as a template for stateless verification use cases.
- *
- *      Example usage:
- *      ```solidity
- *      SimpleVerificationConsumer consumer = new SimpleVerificationConsumer(blsCheckerAddress);
- *      bool success = consumer.verifyUserData(verificationParams);
- *      ```
  */
 contract SimpleVerificationConsumer is OpacitySDK {
     /**
